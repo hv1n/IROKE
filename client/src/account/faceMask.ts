@@ -37,19 +37,27 @@ function getDetector(): Promise<FaceDetector> {
   return detector;
 }
 
-/**
- * 얼굴을 가린 JPEG 사본을 만든다. 얼굴을 하나도 못 찾으면 FaceNotFoundError (가리지 않은 사진은 올리지 않는다).
- * 원본은 건드리지 않는다.
- */
-export async function maskFaces(dataUrl: string): Promise<Blob> {
+async function drawAndDetect(dataUrl: string) {
   const img = await loadImage(dataUrl);
   const k = Math.min(1, MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
   const { canvas, ctx } = makeCanvas(Math.round(img.naturalWidth * k), Math.round(img.naturalHeight * k));
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
   const { detections } = (await getDetector()).detect(canvas);
-  const boxes = detections.flatMap((d) => (d.boundingBox ? [d.boundingBox] : []));
-  if (!boxes.length) throw new FaceNotFoundError();
+  return { canvas, ctx, boxes: detections.flatMap((d) => (d.boundingBox ? [d.boundingBox] : [])) };
+}
+
+/** 사진에서 얼굴을 찾았는지 (고를 때 미리 확인용) */
+export async function hasFace(dataUrl: string): Promise<boolean> {
+  return (await drawAndDetect(dataUrl)).boxes.length > 0;
+}
+
+/**
+ * 얼굴을 가린 JPEG 사본을 만든다. 원본은 건드리지 않는다.
+ * 얼굴을 하나도 못 찾으면 FaceNotFoundError. 단 allowNoFace(사용자가 '얼굴이 안 보이는 옆·뒷모습'이라고 확인한 결과 사진)면 그대로 만든다.
+ */
+export async function maskFaces(dataUrl: string, opts: { allowNoFace?: boolean } = {}): Promise<Blob> {
+  const { canvas, ctx, boxes } = await drawAndDetect(dataUrl);
+  if (!boxes.length && !opts.allowNoFace) throw new FaceNotFoundError();
 
   ctx.fillStyle = FILL;
   for (const b of boxes) {

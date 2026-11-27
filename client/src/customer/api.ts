@@ -22,7 +22,7 @@ import type {
   ResponseSort,
   UpdateRequestBody,
 } from '@iroke/shared';
-import { uploadImage, uploadImages } from '../account/upload';
+import { uploadImage, uploadResultPhotos, type ResultPhoto } from '../account/upload';
 import { api, qs } from '../account/v2api';
 import { loadSavedProfile, saveProfile } from '../flow/lib/storage';
 import { thumbnail } from './cards';
@@ -68,8 +68,8 @@ export const customerApi = {
   getMatch: (id: string) => api.get<MatchDetail>(`/matches/${id}`),
 
   /** 완료 확인. 결과 사진(최대 2장)은 얼굴을 가린 사본으로 올린다. 바뀐 모발 프로필은 이 브라우저에도 반영 */
-  async confirmMatch(id: string, photos: string[], portfolioConsent: boolean): Promise<ConfirmMatchResponse> {
-    const resultImageKeys = photos.length ? await uploadImages('result', photos) : undefined;
+  async confirmMatch(id: string, photos: ResultPhoto[], portfolioConsent: boolean): Promise<ConfirmMatchResponse> {
+    const resultImageKeys = photos.length ? await uploadResultPhotos(photos) : undefined;
     const res = await api.post<ConfirmMatchResponse>(`/matches/${id}/confirm`, { resultImageKeys, portfolioConsent });
     const local = loadSavedProfile();
     if (local) saveProfile({ ...local, profile: res.hairProfile, confirmedAt: new Date().toISOString() });

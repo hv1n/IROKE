@@ -18,7 +18,7 @@ import type {
   VerificationRequest,
   VerificationStatus,
 } from '@iroke/shared';
-import { uploadImage, uploadImages } from '../account/upload';
+import { uploadImage, uploadResultPhotos, type ResultPhoto } from '../account/upload';
 import { api, qs } from '../account/v2api';
 import { conditionText } from '../customer/labels';
 
@@ -54,8 +54,8 @@ export const designerApi = {
   },
 
   /** 완료 요청. 결과 사진(최대 2장)은 얼굴을 가린 사본으로 올린다. 손님이 7일 안에 확인하지 않으면 자동 완료 */
-  async requestComplete(matchId: string, photos: string[]): Promise<CompleteMatchResponse> {
-    const resultImageKeys = photos.length ? await uploadImages('result', photos) : undefined;
+  async requestComplete(matchId: string, photos: ResultPhoto[]): Promise<CompleteMatchResponse> {
+    const resultImageKeys = photos.length ? await uploadResultPhotos(photos) : undefined;
     return api.post<CompleteMatchResponse>(`/matches/${matchId}/complete`, { resultImageKeys });
   },
   /** 디자이너 → 손님 ('no' = 노쇼) */

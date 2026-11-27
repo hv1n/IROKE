@@ -3,8 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import type { DesignerResponseItem, DesignerResponseTab, PromiseKept } from '@iroke/shared';
 import { dday, priceText } from '../customer/labels';
 import { PlainHeader, Thumb } from '../customer/parts';
-import { normalizeSelfie } from '../flow/lib/image';
-import { usePhotoPicker } from '../flow/ui/usePhotoPicker';
+import { useResultPhotos } from '../customer/useResultPhotos';
 import { AppScreen, BottomSheet, Button, ChipSelect, Notice, PhotoCard, ScreenTitle, TabBar } from '../ui';
 import circleCheck from '../ui/assets/circle-check.svg';
 import { designerApi } from './api';
@@ -45,10 +44,8 @@ export function MyResponses() {
   const [completing, setCompleting] = useState<DesignerResponseItem | null>(null);
   const [reviewing, setReviewing] = useState<DesignerResponseItem | null>(null);
   const [promise, setPromise] = useState<PromiseKept | null>(null);
-  const [photos, setPhotos] = useState<(string | undefined)[]>([undefined, undefined]);
-  const [slot, setSlot] = useState(0);
+  const shots = useResultPhotos(2);
   const [error, setError] = useState('');
-  const picker = usePhotoPicker(normalizeSelfie, (img) => setPhotos((p) => p.map((x, i) => (i === slot ? img : x))));
 
   const reload = useCallback(async () => {
     setItems(await designerApi.listMyResponses(tab));
@@ -117,7 +114,7 @@ export function MyResponses() {
         })}
       </ul>
       <p className="info-box reg-info">{'완료 요청에 결과 사진을 첨부할 수 있어요.\n손님이 확인하면 인증 작업물로 쌓여요.'}</p>
-      {picker.input}
+      {shots.elements}
 
       <BottomSheet
         open={Boolean(completing)}
@@ -125,12 +122,13 @@ export function MyResponses() {
         title="시술 완료 요청"
         footer={
           <Button
+            disabled={shots.busy}
             onClick={async () => {
               if (!completing?.match) return;
               try {
-                await designerApi.requestComplete(completing.match.id, photos.filter((p): p is string => Boolean(p)));
+                await designerApi.requestComplete(completing.match.id, shots.selected);
                 setCompleting(null);
-                setPhotos([undefined, undefined]);
+                shots.reset();
                 await reload();
               } catch (e) {
                 setError((e as Error).message);
@@ -145,20 +143,18 @@ export function MyResponses() {
         <div className="result-shots">
           {['정면', '옆·뒤'].map((label, i) => (
             <figure key={label}>
-              <PhotoCard
-                image={photos[i]}
-                alt={`결과 사진 ${label}`}
-                size="sm"
-                onPick={() => {
-                  setSlot(i);
-                  picker.open();
-                }}
-              />
+              <PhotoCard image={shots.photos[i]?.image} alt={`결과 사진 ${label}`} size="sm" onPick={() => shots.pick(i)} />
               <figcaption>{label}</figcaption>
             </figure>
           ))}
         </div>
-        {error && <Notice tone="error">{error}</Notice>}
+        {shots.busy && (
+          <p className="flow-loading" role="status">
+            <span className="u-spinner" aria-hidden="true" />
+            사진을 확인하고 있어요
+          </p>
+        )}
+        {(error || shots.error) && <Notice tone="error">{error || shots.error}</Notice>}
       </BottomSheet>
 
       <BottomSheet
