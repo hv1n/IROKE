@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { Button, Notice, PhotoCard, PillButton } from '../../ui';
+import chevronRow from '../../ui/assets/chevron-left-row.svg';
+import chevronSm from '../../ui/assets/chevron-left-sm.svg';
 import { useFlow } from '../FlowProvider';
-import { historyText, profileRows } from '../lib/card';
+import { historyRowText, profileSummary } from '../lib/labels';
 import { generationMessage } from '../lib/messages';
 import { currentGeneration, inputKey } from '../lib/state';
-import { BeforeAfter } from '../ui/BeforeAfter';
-import { FlowLayout } from '../ui/FlowLayout';
+import { FlowScreen } from '../ui/FlowScreen';
 
 /** 가짜 퍼센트 대신 경과 시간과 단계 문구로 진행감을 준다 */
 function stageText(seconds: number) {
@@ -25,154 +27,118 @@ function useElapsed(startedAt: number | undefined) {
   return startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
 }
 
+/** 5/6 AI 시술 (Figma 459:766 조건확인). 완성되면 6/6 시안 화면으로 넘어간다 */
 export function GenerateStep() {
-  const { state, status, statusError, retryStatus, promptVersion, job, jobError, startGeneration } = useFlow();
+  const { state, statusError, retryStatus, status, promptVersion, job, jobError, startGeneration } = useFlow();
   const navigate = useNavigate();
   const key = inputKey(state, promptVersion);
   const result = currentGeneration(state, promptVersion);
   const pending = Boolean(job);
   const error = jobError && jobError.key === key ? jobError : null;
   const elapsed = useElapsed(job?.startedAt);
+
+  // 이 화면에서 시작한 생성이 끝나면 시안 화면으로
+  const wasPending = useRef(pending);
+  useEffect(() => {
+    if (wasPending.current && !pending && result) navigate('/flow/card');
+    wasPending.current = pending;
+  }, [pending, result, navigate]);
+
   const { selfie, reference, profile, styleTag } = state;
   if (!selfie || !reference || !profile || !styleTag) return null;
 
-  const back = (
-    <Link className="pill pill--ghost pill--lg pill--back" to="/flow/style">
-      이전
-    </Link>
-  );
-
   if (pending) {
     return (
-      <FlowLayout
+      <FlowScreen
         step={4}
-        badge="Step 5 · AI hair"
-        title="AI가 헤어를 시술하고 있어요"
-        lead="얼굴·표정·배경은 그대로 두고 헤어만 바꿔요."
-        actions={
-          <button type="button" className="pill pill--lg" disabled>
-            시술 중… {elapsed}초
-          </button>
-        }
+        title={'AI가 헤어를\n시술하고 있어요.'}
+        sub="얼굴, 표정, 배경은 그대로 두고 헤어만 바꿔요."
+        bottom={<Button disabled>시술 중… {elapsed}초</Button>}
       >
-        <div className="working" role="status" aria-live="polite">
-          <img src={selfie} alt="" />
-          <span className="working__shimmer" aria-hidden="true" />
-          <p className="working__text">
-            <span className="spinner spinner--light" aria-hidden="true" />
+        <div className="flow-photo" role="status" aria-live="polite">
+          <div className="working">
+            <PhotoCard image={selfie} alt="" />
+            <span className="working__shimmer" aria-hidden="true" />
+          </div>
+          <p className="flow-loading">
+            <span className="u-spinner" aria-hidden="true" />
             {stageText(elapsed)}
           </p>
         </div>
-      </FlowLayout>
+      </FlowScreen>
     );
   }
 
-  if (result) {
-    return (
-      <FlowLayout
-        step={4}
-        badge="Step 5 · AI hair"
-        title={`「${styleTag}」 시안이 나왔어요`}
-        lead="가운데 선을 좌우로 움직여 지금 모습과 비교해 보세요."
-        actions={
-          <>
-            {back}
-            <button type="button" className="pill pill--lg" onClick={() => navigate('/flow/card')}>
-              전달 카드 만들기 <span className="pill__arrow" aria-hidden="true">→</span>
-            </button>
-          </>
-        }
-      >
-        <BeforeAfter before={selfie} after={result.image} />
-        {status?.mode === 'mock' && <p className="hint">MOCK 모드라 셀카가 그대로 돌아와요. 실제 시안은 AI_MODE=gemini에서 만들어져요.</p>}
-        <p className="meta">
-          생성 {(result.latencyMs / 1000).toFixed(1)}초 · 프롬프트 {result.promptVersion}
-        </p>
-        <button type="button" className="text-button" onClick={startGeneration}>
-          같은 조건으로 다시 만들기
-        </button>
-        {error && (
-          <p className="form-error" role="alert">
-            {generationMessage(error.code)}
-          </p>
-        )}
-      </FlowLayout>
-    );
-  }
+  const rows: [string, string, string][] = [
+    ['스타일', styleTag, '/flow/style'],
+    ...profileSummary(profile).map(([label, value]): [string, string, string] => [label, value, label === '현재 밝기' ? '/flow/profile?part=2' : '/flow/profile']),
+    ['시술 이력', historyRowText(profile), '/flow/profile?part=2'],
+  ];
 
   return (
-    <FlowLayout
+    <FlowScreen
       step={4}
-      badge="Step 5 · AI hair"
-      title="이 조건으로 시안을 만들까요?"
-      lead="보통 20초 안에 완성돼요. 얼굴·표정·배경은 그대로 두고 헤어만 바꿔요."
-      actions={
-        <>
-          {back}
-          <button type="button" className="pill pill--lg" disabled={!status} onClick={startGeneration}>
-            {error ? '다시 시도' : 'AI 헤어 시술 시작'} <span className="pill__arrow" aria-hidden="true">→</span>
-          </button>
-        </>
+      title={'이 조건으로 헤어스타일\n시안을 만들까요?'}
+      sub="얼굴, 표정, 배경은 그대로 두고 헤어만 바꿔요."
+      bottom={
+        result ? (
+          <Button onClick={() => navigate('/flow/card')}>만든 시안 보기 →</Button>
+        ) : (
+          <Button disabled={!status} onClick={startGeneration}>
+            {error ? '다시 시도' : 'AI 헤어 시술 시작 →'}
+          </Button>
+        )
       }
     >
       {error && (
-        <div className="notice notice--error" role="alert">
-          <p>{generationMessage(error.code)}</p>
+        <div className="flow-error" role="alert">
+          <Notice tone="error">{generationMessage(error.code)}</Notice>
           {error.code === 'profile_not_confirmed' && (
-            <div className="notice__actions">
-              <Link className="pill pill--ghost" to="/flow/profile">
-                모발 프로필 확인하기
-              </Link>
+            <div className="flow-error__actions">
+              <PillButton onClick={() => navigate('/flow/profile')}>모발 프로필 확인하기</PillButton>
             </div>
           )}
         </div>
       )}
       {statusError && (
-        <div className="notice notice--error" role="alert">
-          <p>서버에 연결하지 못했어요.</p>
-          <div className="notice__actions">
-            <button type="button" className="pill pill--ghost" onClick={retryStatus}>
-              다시 연결
-            </button>
+        <div className="flow-error" role="alert">
+          <Notice tone="error">서버에 연결하지 못했어요.</Notice>
+          <div className="flow-error__actions">
+            <PillButton onClick={retryStatus}>다시 연결</PillButton>
           </div>
         </div>
       )}
 
-      <div className="summary-images">
-        <figure>
-          <img src={selfie} alt="내 셀카" />
-          <figcaption>
-            내 셀카 <Link to="/start">변경</Link>
-          </figcaption>
-        </figure>
-        <figure>
-          <img src={reference} alt="레퍼런스 사진" />
-          <figcaption>
-            레퍼런스 <Link to="/flow/reference">변경</Link>
-          </figcaption>
-        </figure>
+      <div className="pair">
+        {(
+          [
+            ['내 셀카', selfie, '/start'],
+            ['레퍼런스', reference, '/flow/reference'],
+          ] as const
+        ).map(([label, image, to]) => (
+          <figure key={label} className="pair__item">
+            <PhotoCard image={image} alt={label} size="sm" />
+            <figcaption>
+              <span className="pair__label">{label}</span>
+              <Link className="pair__change" to={to}>
+                변경하기 <img src={chevronSm} alt="" />
+              </Link>
+            </figcaption>
+          </figure>
+        ))}
       </div>
 
-      <dl className="summary">
-        <div className="summary__row summary__row--wide">
-          <dt>스타일</dt>
-          <dd>
-            {styleTag} <Link to="/flow/style">변경</Link>
-          </dd>
-        </div>
-        {profileRows(profile).map(([label, value]) => (
-          <div key={label} className="summary__row">
-            <dt>{label}</dt>
-            <dd>{value}</dd>
-          </div>
+      <ul className="summary-rows">
+        {rows.map(([label, value, to]) => (
+          <li key={label}>
+            <Link to={to} aria-label={`${label} ${value} 변경`}>
+              <span className="summary-rows__label">{label}</span>
+              <span className="summary-rows__value">{value}</span>
+              <img className="summary-rows__chevron" src={chevronRow} alt="" />
+            </Link>
+          </li>
         ))}
-        <div className="summary__row summary__row--wide">
-          <dt>시술 이력</dt>
-          <dd>
-            {historyText(profile)} <Link to="/flow/profile">변경</Link>
-          </dd>
-        </div>
-      </dl>
-    </FlowLayout>
+      </ul>
+    </FlowScreen>
   );
 }

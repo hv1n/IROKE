@@ -14,6 +14,8 @@ export interface StatusResponse {
 export interface AnalyzeRequest {
   /** data URL */
   image: string;
+  /** 브라우저에서 계산한 모발 임베딩 (분류기 병합용). 아직 보내지 않는다 */
+  embedding?: number[];
 }
 
 /** POST /api/profile-confirmations — AI 원본 추정값 + 사용자가 고친 항목 + 확정 프로필 기록 */
