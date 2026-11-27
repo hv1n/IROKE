@@ -1,5 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import close14 from './assets/close-14.svg';
 import closeIcon from './assets/close.svg';
 import infoIcon from './assets/info-lg.svg';
 
@@ -52,9 +53,13 @@ interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
+  /** confirm: 왼쪽 정렬·흰 배경·버튼 가로 배치 (정말 내리시겠어요?) */
+  layout?: 'center' | 'confirm';
+  /** 오른쪽 위 X */
+  closeButton?: boolean;
   body?: ReactNode;
-  /** 버튼들 (위가 주 버튼) */
-  actions: ReactNode;
+  /** 버튼들 (위가 주 버튼). 없으면 X로만 닫는다 */
+  actions?: ReactNode;
   /** 맨 위 i 아이콘 */
   icon?: boolean;
   /** 아이콘 대신 맨 위 작은 갈색 글자 (NEW) */
@@ -62,17 +67,22 @@ interface ModalProps {
 }
 
 /** 가운데 팝업 (디자이너 구할까요?, 요청 내리기 확인 등) */
-export function Modal({ open, onClose, title, body, actions, icon = true, eyebrow }: ModalProps) {
+export function Modal({ open, onClose, title, body, actions, icon = true, eyebrow, layout = 'center', closeButton }: ModalProps) {
   const id = useId();
   return (
-    <Dialog open={open} onClose={onClose} className="modal" labelledBy={id}>
+    <Dialog open={open} onClose={onClose} className={`modal${layout === 'confirm' ? ' modal--confirm' : ''}`} labelledBy={id}>
+      {closeButton && (
+        <button type="button" className="u-icon-button modal__close" onClick={onClose} aria-label="닫기">
+          <img src={close14} alt="" />
+        </button>
+      )}
       <div className="modal__inner">
-        {eyebrow ? <p className="modal__eyebrow">{eyebrow}</p> : icon && <img src={infoIcon} alt="" />}
+        {layout === 'confirm' ? null : eyebrow ? <p className="modal__eyebrow">{eyebrow}</p> : icon && <img src={infoIcon} alt="" />}
         <h2 id={id} className="modal__title">
           {title}
         </h2>
         {body && <p className="modal__body">{body}</p>}
-        <div className="modal__actions">{actions}</div>
+        {actions && <div className="modal__actions">{actions}</div>}
       </div>
     </Dialog>
   );
@@ -81,24 +91,29 @@ export function Modal({ open, onClose, title, body, actions, icon = true, eyebro
 interface BottomSheetProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title: ReactNode;
+  /** X 대신 위쪽 손잡이 막대 (디자이너 확정 시트) */
+  handle?: boolean;
   children: ReactNode;
   /** 아래 버튼 (확인) */
   footer?: ReactNode;
 }
 
 /** 아래에서 올라오는 시트 (시술이력 선택, 날짜 선택, 디자이너 확정 등) */
-export function BottomSheet({ open, onClose, title, children, footer }: BottomSheetProps) {
+export function BottomSheet({ open, onClose, title, children, footer, handle }: BottomSheetProps) {
   const id = useId();
   return (
-    <Dialog open={open} onClose={onClose} className="sheet" labelledBy={id}>
+    <Dialog open={open} onClose={onClose} className={`sheet${handle ? ' sheet--handle' : ''}`} labelledBy={id}>
+      {handle && <span className="sheet__handle" aria-hidden="true" />}
       <div className="sheet__head">
         <h2 id={id} className="sheet__title">
           {title}
         </h2>
-        <button type="button" className="u-icon-button" onClick={onClose} aria-label="닫기">
-          <img src={closeIcon} alt="" />
-        </button>
+        {!handle && (
+          <button type="button" className="u-icon-button" onClick={onClose} aria-label="닫기">
+            <img src={closeIcon} alt="" />
+          </button>
+        )}
       </div>
       <div className="sheet__body">{children}</div>
       {footer && <div className="sheet__foot">{footer}</div>}
