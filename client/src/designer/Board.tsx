@@ -6,7 +6,7 @@ import { dday } from '../customer/labels';
 import { AppScreen, Notice, ScreenTitle, TabBar } from '../ui';
 import searchIcon from '../ui/assets/search.svg';
 import { VerifyNotice } from './VerifyNotice';
-import { boardCondition, designerApi } from './mockApi';
+import { boardCondition, designerApi } from './api';
 import { DESIGNER_TABS, DESIGNER_TAB_LABELS } from './tabs';
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = { low: '쉬움', medium: '보통', high: '어려움' };

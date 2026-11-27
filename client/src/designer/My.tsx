@@ -17,14 +17,14 @@ export function DesignerMy() {
   const navigate = useNavigate();
   const location = useLocation();
   const notice = (location.state as { notice?: 'verify' | 'saved' } | null)?.notice;
-  const [me, refresh] = useDesigner();
+  const [me] = useDesigner();
   if (!me) return null;
   return (
     <AppScreen header={<PlainHeader onBack={() => navigate('/pro')} />} tabBar={<TabBar active="my" links={DESIGNER_TABS} labels={DESIGNER_TAB_LABELS} />}>
       <ScreenTitle title="마이페이지" />
       {notice === 'verify' && me.verifyStatus === 'pending' && <Notice tone="info">인증을 요청했어요. 영업일 기준 1~2일 걸려요.</Notice>}
       {notice === 'saved' && <Notice tone="info">프로필을 수정했어요.</Notice>}
-      <VerifyNotice onChange={refresh} />
+      {notice !== 'verify' && <VerifyNotice />}
 
       <section className="pro-card">
         <div className="resp-card__head">

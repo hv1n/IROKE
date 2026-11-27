@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import type { MatchDetail, PromiseKept, ReviewManner, Satisfaction } from '@iroke/shared';
 import { AppScreen, Button, ChipSelect, Notice, ScreenTitle } from '../ui';
-import { customerApi } from './mockApi';
+import { customerApi } from './api';
 import { PlainHeader } from './parts';
 
 const MANNER = [

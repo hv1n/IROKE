@@ -7,7 +7,7 @@ import { normalizeSelfie } from '../flow/lib/image';
 import { usePhotoPicker } from '../flow/ui/usePhotoPicker';
 import { AppScreen, BottomSheet, Button, ChipSelect, Notice, PhotoCard, ScreenTitle, TabBar } from '../ui';
 import circleCheck from '../ui/assets/circle-check.svg';
-import { designerApi } from './mockApi';
+import { designerApi } from './api';
 import { DESIGNER_TABS, DESIGNER_TAB_LABELS } from './tabs';
 
 const TABS: { key: DesignerResponseTab; label: string }[] = [

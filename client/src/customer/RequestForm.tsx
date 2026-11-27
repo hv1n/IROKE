@@ -5,9 +5,10 @@ import { useFlow } from '../flow/FlowProvider';
 import { AppScreen, Button, Checkbox, ChipSelect, Notice, ScreenTitle } from '../ui';
 import exchangeIcon from '../ui/assets/exchange.svg';
 import infoBlue from '../ui/assets/info-blue.png';
-import { draftCards, thumbnail } from './cards';
+import { draftCards } from './cards';
 import { BUDGET_LABELS, TIMING_LABELS, hairSummary, type BudgetChoice } from './labels';
-import { customerApi } from './mockApi';
+import { customerApi } from './api';
+import { originalOr } from './local';
 import { PlainHeader, RequestCardRow } from './parts';
 import { RegionChips, RegionSheet } from './RegionSheet';
 
@@ -51,7 +52,7 @@ export function RequestForm() {
   }, [editId]);
 
   const card: RequestCard | undefined = editing ? existing?.card : picked?.card;
-  const image = editing ? existing?.designImageUrl : picked?.image;
+  const image = editing ? (existing ? originalOr(existing.id, existing.designImageUrl) : null) : picked?.image;
   const full = regions.length >= MARKETPLACE_LIMITS.regionsMax;
   const ready = Boolean(card && regions.length && timing && budget && (editing || consent));
 
@@ -76,7 +77,7 @@ export function RequestForm() {
       } else {
         await customerApi.createRequest(
           { card, regions, timing, budget: b, consent: { shareDesignWithVerifiedDesigners: true } },
-          await thumbnail(picked!.image),
+          picked!.image,
         );
         navigate('/designer-request/done', { replace: true });
       }

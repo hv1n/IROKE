@@ -30,7 +30,7 @@ export function My() {
                 </div>
               ))}
             </dl>
-            <p className="section-sub">{saved.confirmedAt.slice(0, 10).replaceAll('-', '.')}에 확정</p>
+            <p className="section-sub">{new Date(saved.confirmedAt).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.$/, '').replaceAll(' ', '')}에 확정</p>
             <div className="button-row">
               <Button size="md" variant="secondary" onClick={() => navigate('/profile')}>
                 확인·수정하기

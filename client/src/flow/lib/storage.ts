@@ -49,6 +49,8 @@ const SAVED_PROFILE_KEY = 'iroke.savedProfile';
 export interface SavedProfile {
   profile: HairProfile;
   confirmedAt: string;
+  /** 서버 모발 프로필과 맞춘 계정 id. 다른 계정이 로그인하면 이 값을 그 계정에 올리지 않는다 */
+  ownerId?: string;
 }
 
 /** 확정한 모발 프로필(사진 제외). 다음 방문 때 「모발 프로필 등록/확인」에서 불러온다. */

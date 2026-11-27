@@ -5,7 +5,8 @@ import { normalizeSelfie } from '../flow/lib/image';
 import { usePhotoPicker } from '../flow/ui/usePhotoPicker';
 import { AppScreen, BottomSheet, Button, Checkbox, ChipSelect, Notice, PhotoCard, ScreenTitle } from '../ui';
 import { hairSummary } from './labels';
-import { customerApi } from './mockApi';
+import { customerApi } from './api';
+import { originalOr } from './local';
 import { PlainHeader, RequestCardRow } from './parts';
 
 const SLOTS = ['정면', '옆·뒤'] as const;
@@ -16,7 +17,7 @@ const DISPUTE = [
 
 /**
  * 요청내역 - 시술후 (Figma 547:4406). 디자이너가 완료를 요청하면 손님이 확인한다.
- * 결과 사진은 백엔드 한도(최대 2장: 정면, 옆·뒤)에 맞춰 2칸. 목업은 사진을 올리지 않는다.
+ * 결과 사진은 백엔드 한도(최대 2장: 정면, 옆·뒤)에 맞춰 2칸. 올릴 때 얼굴을 가린 사본만 보낸다.
  */
 export function MatchConfirm() {
   const { id = '' } = useParams();
@@ -43,7 +44,7 @@ export function MatchConfirm() {
     setBusy(true);
     setError('');
     try {
-      await customerApi.confirmMatch(id, { resultImageKeys: photos.filter(Boolean).map((_, i) => `mock-${i}`), portfolioConsent: consent });
+      await customerApi.confirmMatch(id, photos.filter((p): p is string => Boolean(p)), consent);
       navigate(`/matches/${id}/review`, { replace: true });
     } catch (e) {
       setError((e as Error).message);
@@ -75,7 +76,7 @@ export function MatchConfirm() {
       />
       {m && (
         <>
-          <RequestCardRow image={m.request.designImageUrl} styleTag={m.request.styleTag} summary={hairSummary(m.request.card.profile)} note="" />
+          <RequestCardRow image={originalOr(m.request.id, m.request.designImageUrl)} styleTag={m.request.styleTag} summary={hairSummary(m.request.card.profile)} note="" />
           <section className="req-section">
             <h2 className="section-title">결과 사진</h2>
             <p className="section-sub">선택이에요. 올리면 다음 시안이 더 정확해져요.</p>
@@ -125,8 +126,13 @@ export function MatchConfirm() {
             disabled={!reason}
             onClick={async () => {
               if (!reason) return;
-              await customerApi.disputeMatch(id, { reason });
-              navigate('/requests', { replace: true });
+              try {
+                await customerApi.disputeMatch(id, { reason });
+                navigate('/requests', { replace: true });
+              } catch (e) {
+                setDispute(false);
+                setError((e as Error).message);
+              }
             }}
           >
             알리기

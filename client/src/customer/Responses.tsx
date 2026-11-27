@@ -7,7 +7,8 @@ import sortChevron from '../ui/assets/sort-chevron.svg';
 import { AcceptSheet } from './AcceptSheet';
 import { GradeModal } from './GradeModal';
 import { AVAILABILITY_LABELS, SORT_LABELS, priceText } from './labels';
-import { customerApi } from './mockApi';
+import { customerApi } from './api';
+import { markSeen } from './local';
 import { Avatar, GradeBadge, PlainHeader } from './parts';
 
 const SORTS = (Object.keys(SORT_LABELS) as ResponseSort[]).map((value) => ({ value, label: SORT_LABELS[value] }));
@@ -28,7 +29,7 @@ export function Responses() {
       .listResponses(id, sort)
       .then(({ items }) => {
         setItems(items);
-        customerApi.markSeen(id);
+        markSeen(items.map((r) => r.id));
       })
       .catch((e: Error) => setError(e.message));
   }, [id, sort]);

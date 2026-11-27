@@ -27,7 +27,7 @@ export function KakaoButton({ returnTo, label = '카카오로 시작' }: { retur
       >
         <img src={kakaoIcon} alt="" />
         {label}
-        {mode === 'mock' || mode === 'dev' ? <span className="kakao-button__dev">개발용</span> : null}
+        {mode === 'dev' ? <span className="kakao-button__dev">개발용</span> : null}
       </button>
       {error && (
         <p className="kakao-button__error" role="alert">

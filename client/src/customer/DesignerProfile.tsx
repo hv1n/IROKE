@@ -5,7 +5,7 @@ import { AppScreen, Button, Notice, ScreenTitle } from '../ui';
 import instagram from '../ui/assets/instagram.svg';
 import { AcceptSheet } from './AcceptSheet';
 import { hairSummary } from './labels';
-import { customerApi } from './mockApi';
+import { customerApi } from './api';
 import { Avatar, GradeBadge, PlainHeader, Thumb } from './parts';
 
 type Tab = 'verified' | 'manual' | 'reviews';

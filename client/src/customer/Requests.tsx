@@ -6,7 +6,8 @@ import { currentGeneration } from '../flow/lib/state';
 import { AppScreen, Button, Card, Modal, Notice, TabBar } from '../ui';
 import sparkle from '../ui/assets/remake-other.png';
 import { conditionText, dday } from './labels';
-import { customerApi, devRequestComplete } from './mockApi';
+import { customerApi } from './api';
+import { originalOr, unseenCount } from './local';
 import { ArrowCircle, BrandHeader, Thumb } from './parts';
 import { CUSTOMER_TABS } from './tabs';
 
@@ -26,6 +27,7 @@ export function Requests() {
   const [match, setMatch] = useState<MatchDetail | null>(null);
   const [closing, setClosing] = useState(false);
   const [askNew, setAskNew] = useState(false);
+  const [unseen, setUnseen] = useState(0);
   const [error, setError] = useState('');
 
   const reload = useCallback(async () => {
@@ -35,7 +37,11 @@ export function Requests() {
       const top = items[0];
       const detail = top ? await customerApi.getRequest(top.id) : null;
       setMatch(detail?.matchId ? await customerApi.getMatch(detail.matchId) : null);
-      setAskNew(!items.some((i) => i.status === 'open' || i.status === 'matched'));
+      // 확인하지 않은 응답 수 (본 응답 id는 이 브라우저에 기록)
+      const responses = top?.status === 'open' && top.responseCount > 0 ? (await customerApi.listResponses(top.id)).items : [];
+      setUnseen(unseenCount(responses.map((r) => r.id)));
+      // 요청이 하나도 없을 때만 바로 묻는다 (끝난 요청이 있으면 화면의 버튼으로)
+      setAskNew(items.length === 0);
     } catch (e) {
       setError((e as Error).message);
     }
@@ -46,7 +52,15 @@ export function Requests() {
 
   const hasCard = Boolean(currentGeneration(state, promptVersion));
   const req = items?.[0];
-  const unseen = req ? customerApi.unseenCount(req.id) : 0;
+  const run = (action: () => Promise<unknown>) => async () => {
+    setError('');
+    try {
+      await action();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+    await reload();
+  };
 
   return (
     <AppScreen tabBar={<TabBar active="requests" links={CUSTOMER_TABS} />} header={<BrandHeader />}>
@@ -76,7 +90,7 @@ export function Requests() {
                 <p className="req-card__title">{req.styleTag}</p>
                 <p className="req-card__cond">{conditionText(req.regions, req.timing, req.budget)}</p>
               </div>
-              <Thumb src={req.designImageUrl} alt={`${req.styleTag} AI 시안`} className="req-card__thumb" />
+              <Thumb src={originalOr(req.id, req.designImageUrl)} alt={`${req.styleTag} AI 시안`} className="req-card__thumb" />
             </div>
             {req.status === 'open' && (
               <div className="button-row">
@@ -88,16 +102,17 @@ export function Requests() {
                 </Button>
               </div>
             )}
-            {(req.status === 'expired' || req.status === 'cancelled') && (
+            {req.status === 'expired' && req.responseCount === 0 && (
               <div className="button-row">
-                <Button
-                  size="md"
-                  onClick={async () => {
-                    await customerApi.reopenRequest(req.id);
-                    await reload();
-                  }}
-                >
+                <Button size="md" onClick={run(() => customerApi.reopenRequest(req.id))}>
                   다시 올리기
+                </Button>
+              </div>
+            )}
+            {(req.status === 'completed' || req.status === 'cancelled' || (req.status === 'expired' && req.responseCount > 0)) && (
+              <div className="button-row">
+                <Button size="md" variant="secondary" onClick={() => setAskNew(true)}>
+                  새로 요청하기
                 </Button>
               </div>
             )}
@@ -137,23 +152,9 @@ export function Requests() {
             </Link>
           )}
           {match?.status === 'accepted' && (
-            <>
-              <Notice tone="info">
-                <b>{match.designer.nickname}</b>에게 맡겼어요. 예약 페이지에서 예약을 마무리해 주세요.
-              </Notice>
-              {import.meta.env.DEV && (
-                <button
-                  type="button"
-                  className="flow-text-button"
-                  onClick={async () => {
-                    devRequestComplete(match.id);
-                    await reload();
-                  }}
-                >
-                  (개발용) 디자이너가 시술 완료를 요청한 상태로
-                </button>
-              )}
-            </>
+            <Notice tone="info">
+              <b>{match.designer.nickname}</b>에게 맡겼어요. 예약 페이지에서 예약을 마무리해 주세요.
+            </Notice>
           )}
 
           {req.status === 'open' && (
@@ -190,9 +191,8 @@ export function Requests() {
             <Button
               variant="danger"
               onClick={async () => {
-                if (req) await customerApi.closeRequest(req.id);
                 setClosing(false);
-                await reload();
+                if (req) await run(() => customerApi.closeRequest(req.id))();
               }}
             >
               내리기
