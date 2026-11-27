@@ -60,7 +60,9 @@ export const customerApi = {
   // ── 디자이너 프로필 ──
 
   getDesigner: (id: string) => api.get<DesignerPublicProfile>(`/designers/${id}`),
-  getPortfolio: (id: string, source?: PortfolioSource) => api.get<Paged<PortfolioItem>>(`/designers/${id}/portfolio${qs({ source, limit: LIMIT })}`),
+  /** similarToMe: 내 서버 모발 프로필과 기장·모질이 같은 작업물만 (프로필이 없으면 전체) */
+  getPortfolio: (id: string, source?: PortfolioSource, similarToMe?: boolean) =>
+    api.get<Paged<PortfolioItem>>(`/designers/${id}/portfolio${qs({ source, similarToMe: similarToMe || undefined, limit: LIMIT })}`),
   getReviews: (id: string) => api.get<Paged<DesignerReview>>(`/designers/${id}/reviews${qs({ limit: LIMIT })}`),
 
   // ── 매칭 · 완료 · 후기 ──

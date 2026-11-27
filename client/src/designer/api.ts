@@ -1,19 +1,23 @@
 // 디자이너 쪽 API (IROKE_backend api-v2).
 // 디자이너 여부·인증 상태는 로그인 정보(Me.designer)에 있다 → useAuth().user.designer / useDesigner
 import type {
+  AlertSettings,
   BoardDetail,
   BoardItem,
   BoardSort,
+  Budget,
   CompleteMatchResponse,
   CreateResponseBody,
   CreateReviewResponse,
   DesignerPublicProfile,
   DesignerResponseItem,
   DesignerResponseTab,
+  Difficulty,
   Me,
   Paged,
   PortfolioItem,
   PromiseKept,
+  TreatmentType,
   UpdateDesignerBody,
   VerificationRequest,
   VerificationStatus,
@@ -23,6 +27,15 @@ import { api, qs } from '../account/v2api';
 import { conditionText } from '../customer/labels';
 
 const LIMIT = 50;
+
+/** 게시판 필터 (비우면 전체). region은 내 활동 지역 중 하나, budget을 고르면 '디자이너 제안' 요청도 함께 나온다 */
+export interface BoardFilters {
+  region?: string;
+  treatment?: TreatmentType;
+  difficulty?: Difficulty;
+  budget?: Budget;
+  sort?: BoardSort;
+}
 const TABS: DesignerResponseTab[] = ['pending', 'in_progress', 'done'];
 
 export const designerApi = {
@@ -36,9 +49,13 @@ export const designerApi = {
   profile: (id: string) => api.get<DesignerPublicProfile>(`/designers/${id}`),
 
   /** 내 활동 지역 게시판 */
-  async listBoard(sort: BoardSort = 'newest'): Promise<BoardItem[]> {
-    return (await api.get<Paged<BoardItem>>(`/board${qs({ sort, limit: LIMIT })}`)).items;
+  async listBoard(f: BoardFilters = {}): Promise<BoardItem[]> {
+    return (await api.get<Paged<BoardItem>>(`/board${qs({ ...f, sort: f.sort ?? 'newest', limit: LIMIT })}`)).items;
   },
+
+  /** 새 요청 알림 조건. 배열이 비면 전부 (지역은 내 활동 지역 전부) */
+  alertSettings: () => api.get<AlertSettings>('/designers/me/alert-settings'),
+  saveAlertSettings: (body: AlertSettings) => api.put<AlertSettings>('/designers/me/alert-settings', body),
   /** 시안(얼굴 가린 사본)은 인증 디자이너에게만 내려온다 */
   getBoard: (requestId: string) => api.get<BoardDetail>(`/board/${requestId}`),
   /** 같은 요청에는 한 번만 */

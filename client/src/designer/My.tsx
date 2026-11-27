@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../account/AuthProvider';
 import { NotificationBell } from '../account/NotificationBell';
@@ -6,6 +7,7 @@ import { AppScreen, Button, Notice, ScreenTitle, TabBar } from '../ui';
 import instagram from '../ui/assets/instagram.svg';
 import sparkle from '../ui/assets/remake-other.png';
 import refresh3d from '../ui/assets/remake-same.png';
+import { AlertSettingsSheet } from './AlertSettingsSheet';
 import { VerifyNotice } from './VerifyNotice';
 import { useDesigner } from './useDesigner';
 import { DESIGNER_TABS, DESIGNER_TAB_LABELS } from './tabs';
@@ -19,6 +21,7 @@ export function DesignerMy() {
   const location = useLocation();
   const notice = (location.state as { notice?: 'verify' | 'saved' } | null)?.notice;
   const [me] = useDesigner();
+  const [alerts, setAlerts] = useState(false);
   if (!me) return null;
   return (
     <AppScreen header={<PlainHeader onBack={() => navigate('/pro')} end={<NotificationBell />} />} tabBar={<TabBar active="my" links={DESIGNER_TABS} labels={DESIGNER_TAB_LABELS} />}>
@@ -67,6 +70,11 @@ export function DesignerMy() {
 
       <ul className="my-menu">
         <li>
+          <button type="button" onClick={() => setAlerts(true)}>
+            새 요청 알림 설정
+          </button>
+        </li>
+        <li>
           <Link to="/">손님 화면으로 전환</Link>
         </li>
         <li>
@@ -81,6 +89,7 @@ export function DesignerMy() {
           </button>
         </li>
       </ul>
+      <AlertSettingsSheet open={alerts} onClose={() => setAlerts(false)} />
     </AppScreen>
   );
 }
