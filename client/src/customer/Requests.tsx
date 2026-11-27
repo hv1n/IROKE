@@ -83,7 +83,7 @@ export function Requests() {
 
       {req && (
         <>
-          <Card banner={req.status === 'open' ? BANNER.open : BANNER[req.status]} className="req-card">
+          <Card banner={match?.status === 'disputed' ? '시술 결과에 이의를 접수했어요.' : BANNER[req.status]} className="req-card">
             <div className="req-card__row">
               <div>
                 <p className="req-card__dday">{req.status === 'open' ? dday(req.expiresAt) : ''}</p>
@@ -151,6 +151,7 @@ export function Requests() {
               <ArrowCircle />
             </Link>
           )}
+          {match?.status === 'disputed' && <Notice tone="info">IROKE가 확인한 뒤 디자이너와 함께 처리할게요.</Notice>}
           {match?.status === 'accepted' && (
             <Notice tone="info">
               <b>{match.designer.nickname}</b>에게 맡겼어요. 예약 페이지에서 예약을 마무리해 주세요.

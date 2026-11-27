@@ -12,6 +12,15 @@ import tipSharp from '../ui/assets/tip-sharp.svg';
 import uploadDone from '../ui/assets/upload-done.svg';
 import { designerApi } from './api';
 
+/** 서버(httpsUrl)와 같은 규칙: URL로 읽히고 https */
+const isHttpsUrl = (v: string) => {
+  try {
+    return new URL(v).protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 /**
  * 디자이너 등록 (Figma 547:4759 업로드 전 · 547:5024 업로드 완료 · 547:4958 면허증 촬영)
  * 프로필 수정 (547:6073): 면허증을 다시 올리면 재인증, 아니면 매장 정보만 바꾼다.
@@ -32,8 +41,16 @@ export function Register({ edit = false }: { edit?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const reverify = !edit || Boolean(license);
-  const ready = regions.length > 0 && shopName.trim() && bookingUrl.trim() && (!reverify || (license && name.trim() && licenseNo.trim()));
+  // 면허는 처음 등록할 때와 반려됐을 때만 다시 낼 수 있다 (백엔드 규칙). 인증 대기·완료면 매장 정보만 고친다
+  const canReverify = !edit || me?.verifyStatus === 'rejected';
+  const reverify = !edit || (canReverify && Boolean(license));
+  const nameError = name.trim() && (name.trim().length < 2 || name.trim().length > 20) ? '이름은 2~20자로 적어 주세요.' : '';
+  const licenseError = licenseNo.trim() && !/^[0-9A-Za-z-]{4,30}$/.test(licenseNo.trim()) ? '면허번호는 숫자·영문·하이픈 4~30자예요.' : '';
+  // 서버 규칙과 같게 먼저 확인한다 (틀리면 면허증 사진을 올리기 전에 알려 준다)
+  const urlError = bookingUrl.trim() && !isHttpsUrl(bookingUrl.trim()) ? '예약링크는 https:// 로 시작하는 주소여야 해요.' : '';
+  const instaError = instagram.trim() && !/^@?[A-Za-z0-9._]{1,30}$/.test(instagram.trim()) ? '인스타 계정은 영문·숫자·마침표·밑줄 30자 이내로 적어 주세요. (예: @iroke.hair)' : '';
+  const ready =
+    regions.length > 0 && shopName.trim() && bookingUrl.trim() && !urlError && !instaError && (!reverify || (license && name.trim() && licenseNo.trim() && !nameError && !licenseError));
 
   if (camera) {
     return (
@@ -106,16 +123,28 @@ export function Register({ edit = false }: { edit?: boolean }) {
 
       <section className="reg-section">
         <p className="u-field__label">면허증 사진</p>
-        <button type="button" className={`license-box${license || edit ? ' is-done' : ''}`} onClick={() => setCamera(true)}>
+        <button type="button" className={`license-box${license || edit ? ' is-done' : ''}`} onClick={() => setCamera(true)} disabled={!canReverify}>
           {license || edit ? <img className="license-box__done" src={uploadDone} alt="" /> : <img src={cameraIcon} alt="" />}
-          <span>{license ? '업로드를 완료했어요!' : edit ? '다시 등록하려면 클릭해주세요!' : '클릭해서 면허증을 올려보세요!'}</span>
+          <span>
+            {license
+              ? '업로드를 완료했어요!'
+              : !edit
+                ? '클릭해서 면허증을 올려보세요!'
+                : canReverify
+                  ? '다시 등록하려면 클릭해주세요!'
+                  : me?.verifyStatus === 'verified'
+                    ? '면허 인증을 마쳤어요'
+                    : '면허를 확인하고 있어요'}
+          </span>
         </button>
       </section>
 
       {reverify && (
         <>
           <TextField className="reg-section" label="이름" value={name} onChange={setName} clearable placeholder="면허증에 적힌 이름" autoComplete="name" />
+          {nameError && <Notice tone="error">{nameError}</Notice>}
           <TextField className="reg-section" label="면허번호" value={licenseNo} onChange={setLicenseNo} placeholder="면허번호를 입력해주세요." inputMode="numeric" />
+          {licenseError && <Notice tone="error">{licenseError}</Notice>}
           <p className="reg-hint">이름·면허번호는 확인에만 쓰고 저장하지 않아요.</p>
         </>
       )}
@@ -129,7 +158,9 @@ export function Register({ edit = false }: { edit?: boolean }) {
       </section>
       <TextField className="reg-section" label="매장이름" value={shopName} onChange={setShopName} placeholder="예: 숭실헤어 상도점" />
       <TextField className="reg-section" label="예약링크" value={bookingUrl} onChange={setBookingUrl} placeholder="https://booking.naver.com/..." inputMode="url" />
+      {urlError && <Notice tone="error">{urlError}</Notice>}
       <TextField className="reg-section" label="인스타계정 (선택)" value={instagram} onChange={setInstagram} placeholder="@아이디" />
+      {instaError && <Notice tone="error">{instaError}</Notice>}
 
       <p className="info-box reg-info">{'인증은 영업일 기준 1~2일 걸려요.\n인증 전에는 게시판을 볼 수만 있어요.'}</p>
       <RegionSheet open={sheet} onClose={() => setSheet(false)} regions={regions} onChange={setRegions} title="활동지역 추가" />
