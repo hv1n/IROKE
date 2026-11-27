@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import { NotificationBell } from '../account/NotificationBell';
 import { BackButton } from '../ui';
 import arrowCircle from '../ui/assets/arrow-circle.svg';
 import avatar from '../ui/assets/avatar.png';
@@ -18,11 +19,12 @@ export function PlainHeader({ onBack, end, light }: { onBack?: () => void; end?:
   );
 }
 
-/** 로고만 있는 머리 (탭 화면) */
+/** 로고 + 알림 버튼 머리 (탭 화면, 로그인 뒤) */
 export function BrandHeader() {
   return (
     <header className="brand-header">
       <span>IROKE</span>
+      <NotificationBell />
     </header>
   );
 }

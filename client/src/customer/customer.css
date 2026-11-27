@@ -5,6 +5,9 @@
 }
 
 .brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 20px 16px 0;
   font-family: 'Inter', var(--u-font);
   font-size: 16px;
@@ -956,4 +959,106 @@ a.btn {
   margin-left: 6px;
   font-size: 11px;
   color: var(--u-gray-400);
+}
+
+/* ---------- 알림 ---------- */
+
+.bell {
+  position: relative;
+}
+
+.brand-header .bell {
+  margin: -12px -8px -12px 0;
+}
+
+.bell__badge {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.noti-list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.noti {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--u-gray-200);
+  background: none;
+  font: inherit;
+  color: var(--u-gray-900);
+  text-align: left;
+  cursor: pointer;
+}
+
+.noti__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.noti__title {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--u-gray-600);
+}
+
+.noti.is-unread .noti__title {
+  font-weight: 700;
+  color: var(--u-gray-900);
+}
+
+.noti.is-unread .noti__title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 6px 2px 0;
+  border-radius: 50%;
+  background: #e5484d;
+  vertical-align: middle;
+}
+
+.noti__sub {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--u-gray-500);
+}
+
+.noti__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--u-gray-500);
+}
+
+.noti__role {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--u-gray-200);
+  font-size: 11px;
+  color: var(--u-gray-600);
 }

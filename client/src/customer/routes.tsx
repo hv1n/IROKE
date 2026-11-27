@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Notifications } from '../account/Notifications';
 import { CardPicker } from './CardPicker';
 import { DesignerProfile } from './DesignerProfile';
 import { MatchConfirm } from './MatchConfirm';
@@ -13,7 +14,7 @@ import './customer.css';
 
 const gate = (el: ReactNode) => <RequireLogin>{el}</RequireLogin>;
 
-/** 손님 디자이너 구하기·요청내역·마이 (로그인 필요, 목업 데이터) */
+/** 손님 디자이너 구하기·요청내역·마이·알림 (로그인 필요) */
 export const customerRoutes: { path: string; element: ReactNode }[] = [
   { path: '/designer-request', element: gate(<RequestForm />) },
   { path: '/designer-request/cards', element: gate(<CardPicker />) },
@@ -25,4 +26,5 @@ export const customerRoutes: { path: string; element: ReactNode }[] = [
   { path: '/matches/:id/confirm', element: gate(<MatchConfirm />) },
   { path: '/matches/:id/review', element: gate(<Review />) },
   { path: '/my', element: gate(<My />) },
+  { path: '/notifications', element: gate(<Notifications />) },
 ];
