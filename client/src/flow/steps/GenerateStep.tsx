@@ -113,7 +113,7 @@ export function GenerateStep() {
         {(
           [
             ['내 셀카', selfie, '/start'],
-            ['레퍼런스', reference, '/flow/reference'],
+            [state.styleSource?.chosen === 'similar' ? '레퍼런스 (설명으로 대신)' : '레퍼런스', reference, '/flow/reference'],
           ] as const
         ).map(([label, image, to]) => (
           <figure key={label} className="pair__item">

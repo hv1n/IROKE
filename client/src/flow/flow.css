@@ -367,6 +367,15 @@ video.camera__video.is-mirror {
   text-align: center;
 }
 
+.style-carousel__diff {
+  margin: 8px 0 0;
+  max-width: 300px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--u-gray-600);
+  text-align: center;
+}
+
 .u-input,
 .u-textarea {
   width: 100%;

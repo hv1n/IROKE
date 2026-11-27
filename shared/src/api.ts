@@ -14,7 +14,7 @@ export interface StatusResponse {
 export interface AnalyzeRequest {
   /** data URL */
   image: string;
-  /** 브라우저에서 계산한 모발 임베딩 (분류기 병합용). 아직 보내지 않는다 */
+  /** 브라우저에서 계산한 모발 임베딩 (분류기 병합용). 아직 보내지 않는다 (프론트 전용 추가) */
   embedding?: number[];
 }
 
@@ -28,9 +28,11 @@ export interface ProfileConfirmationRequest {
 export interface GenerationRequest {
   /** 정규화된 셀카 data URL (3:4, 768×1024) */
   selfie: string;
-  /** 레퍼런스 data URL (긴 변 1024px) */
-  reference: string;
+  /** 레퍼런스 data URL (긴 변 1024px). styleSource.chosen === 'similar'이면 생략 가능 (보내도 쓰지 않음) */
+  reference?: string;
   styleTag: string;
+  /** 비슷한 스타일의 특징 한 줄. styleSource.chosen === 'similar'이면 필수 (최대 100자) */
+  styleDescription?: string;
   profile: HairProfile;
   /** 확인 단계를 거쳤다는 증거. confirmedAt이 없으면 서버가 거절한다. */
   profileSource: ProfileSource;
@@ -65,9 +67,30 @@ export type ApiErrorCode =
   /** 이미지 대신 텍스트만 응답 */
   | 'text_only'
   | 'timeout'
-  | 'server_error';
+  | 'server_error'
+  // ── v2 [디자이너 구하기] ──
+  /** 401 토큰 없음·만료 */
+  | 'unauthorized'
+  /** 403 권한 없음, 당사자가 아님, 자기 요청에 응답 */
+  | 'forbidden'
+  /** 403 미인증 디자이너가 응답·시안 열람 시도 */
+  | 'not_verified'
+  /** 404 없거나 볼 수 없는 리소스 */
+  | 'not_found'
+  /** 409 같은 요청에 두 번째 응답, 같은 매칭에 두 번째 후기 */
+  | 'already_responded'
+  /** 409 상태 전이 규칙 위반 */
+  | 'invalid_state'
+  /** 410 마감·취소·매칭된 요청에 응답 */
+  | 'request_closed'
+  /** 422 시안 공개 동의 없이 요청 등록 */
+  | 'consent_required'
+  /** 422 필드 규칙 위반. fields로 항목 안내 */
+  | 'validation_failed';
 
 export interface ApiError {
   error: string;
   code: ApiErrorCode;
+  /** validation_failed일 때 항목별 안내 (필드명 → 메시지) */
+  fields?: Record<string, string>;
 }

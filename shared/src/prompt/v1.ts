@@ -16,6 +16,7 @@ export function buildV1(profile: HairProfile, styleTag: string, options: PromptO
     options.hasReference
       ? `Apply the hairstyle "${styleTag}" shown in the second image. Take the cut, shape, silhouette and bangs from it; do not copy the reference person's face, hair texture or hair density.`
       : `Apply the hairstyle "${styleTag}".`,
+    ...(!options.hasReference && options.styleDescription ? [`Style features: ${options.styleDescription}`] : []),
     "Render it as it would realistically look on this person's own hair:",
     lengthRule(profile, options.hasReference),
     `- texture: ${TEXTURE_TEXT[profile.texture]}`,
