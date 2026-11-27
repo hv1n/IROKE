@@ -10,12 +10,14 @@ export interface MyDesigner extends NonNullable<Me['designer']> {
   temperature: number;
   /** 완료된 매칭 수 (등급 계산) */
   completedCount: number;
+  /** 최근 90일 이의 제기 수 (다이아 조건). 불러오기 전에는 undefined */
+  recentDisputes90d?: number;
 }
 
 /** 미등록이면 null. refresh는 서버에서 다시 읽는다 (프로필 수정·인증 신청 뒤) */
 export function useDesigner(): [MyDesigner | null, () => void] {
   const { user, refreshUser } = useAuth();
-  const [extra, setExtra] = useState<Pick<MyDesigner, 'rejectReason' | 'temperature' | 'completedCount'> | null>(null);
+  const [extra, setExtra] = useState<Pick<MyDesigner, 'rejectReason' | 'temperature' | 'completedCount' | 'recentDisputes90d'> | null>(null);
   const [tick, setTick] = useState(0);
   const designer = user?.designer ?? null;
   const userId = user?.id;
@@ -25,7 +27,7 @@ export function useDesigner(): [MyDesigner | null, () => void] {
     if (!userId || !status) return;
     let alive = true;
     Promise.all([designerApi.verification(), designerApi.profile(userId)])
-      .then(([v, p]) => alive && setExtra({ rejectReason: v.rejectReason, temperature: p.temperature, completedCount: p.verifiedWorkCount }))
+      .then(([v, p]) => alive && setExtra({ rejectReason: v.rejectReason, temperature: p.temperature, completedCount: p.verifiedWorkCount, recentDisputes90d: p.recentDisputes90d }))
       .catch(() => undefined);
     return () => {
       alive = false;
@@ -44,6 +46,7 @@ export function useDesigner(): [MyDesigner | null, () => void] {
       rejectReason: extra?.rejectReason ?? null,
       temperature: extra?.temperature ?? user.temperature,
       completedCount: extra?.completedCount ?? 0,
+      recentDisputes90d: extra?.recentDisputes90d,
     },
     refresh,
   ];

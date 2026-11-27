@@ -31,7 +31,7 @@ export function DesignerMy() {
         <div className="resp-card__head">
           <Avatar size={31} />
           <span className="resp-card__nick">{user?.nickname}</span>
-          <GradeBadge count={me.completedCount} temperature={me.temperature} showCount={false} />
+          <GradeBadge count={me.completedCount} temperature={me.temperature} disputes={me.recentDisputes90d} showCount={false} />
         </div>
         <p className="resp-card__shop">{me.shopName}</p>
         <p className="designer-card__shop">
