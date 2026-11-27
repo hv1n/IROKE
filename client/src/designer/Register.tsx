@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../account/AuthProvider';
 import { useNavigate } from 'react-router';
 import { resizeMaxEdge } from '../flow/lib/image';
 import { PlainHeader } from '../customer/parts';
@@ -9,7 +10,7 @@ import tipLandscape from '../ui/assets/tip-landscape.svg';
 import tipLight from '../ui/assets/tip-light.svg';
 import tipSharp from '../ui/assets/tip-sharp.svg';
 import uploadDone from '../ui/assets/upload-done.svg';
-import { designerApi } from './mockApi';
+import { designerApi } from './api';
 
 /**
  * 디자이너 등록 (Figma 547:4759 업로드 전 · 547:5024 업로드 완료 · 547:4958 면허증 촬영)
@@ -17,7 +18,8 @@ import { designerApi } from './mockApi';
  */
 export function Register({ edit = false }: { edit?: boolean }) {
   const navigate = useNavigate();
-  const me = designerApi.me();
+  const { user, refreshUser } = useAuth();
+  const me = user?.designer;
   const [camera, setCamera] = useState(false);
   const [license, setLicense] = useState<string>();
   const [name, setName] = useState('');
@@ -78,6 +80,8 @@ export function Register({ edit = false }: { edit?: boolean }) {
       const info = { regions, shopName: shopName.trim(), bookingUrl: bookingUrl.trim(), instagram: instagram.trim() || null };
       if (reverify) await designerApi.submitVerification({ ...info, name: name.trim(), licenseNumber: licenseNo.trim() }, license!);
       else await designerApi.updateMe(info);
+      // 등록 상태·매장 정보가 바뀌었으니 내 정보를 다시 읽는다 (게시판 접근 여부가 여기서 정해진다)
+      await refreshUser();
       navigate(edit ? '/pro/my' : '/pro/my', { replace: true, state: { notice: reverify ? 'verify' : 'saved' } });
     } catch (e) {
       setError((e as Error).message);

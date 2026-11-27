@@ -4,7 +4,6 @@ import { useAuth } from '../account/AuthProvider';
 import { Header } from '../components/Header';
 import { Hero, HomeLink } from '../components/Hero';
 import { Button, Modal, TabBar } from '../ui';
-import { designerApi } from './mockApi';
 import { DESIGNER_TABS, DESIGNER_TAB_LABELS } from './tabs';
 
 /** 디자이너 홈 (Figma 547:4808 등록전 · 547:5192 등록후 · 547:5236 미등록 안내) */
@@ -12,7 +11,7 @@ export function DesignerHome() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const registered = Boolean(designerApi.me());
+  const registered = Boolean(user?.designer);
   const [ask, setAsk] = useState(params.get('needRegister') === '1');
 
   const close = () => {

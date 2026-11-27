@@ -4,14 +4,13 @@
   "type": "module",
   "workspaces": [
     "shared",
-    "server",
     "client"
   ],
   "scripts": {
-    "dev": "node scripts/dev.mjs",
+    "dev": "npm run dev -w client",
     "build": "npm run build -w client",
     "test": "vitest run",
-    "typecheck": "tsc -p shared --noEmit && tsc -p server --noEmit && tsc -p client --noEmit"
+    "typecheck": "tsc -p shared --noEmit && tsc -p client --noEmit"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

@@ -51,7 +51,7 @@ export function CardStep() {
     setReady(false);
     const id = window.setTimeout(async () => {
       try {
-        const blob = await canvasToBlob(await renderCard({ after: result.image, before: selfie, styleTag, profile, note, date: new Date() }));
+        const blob = await canvasToBlob(await renderCard({ after: result.image, styleTag, profile, note, date: new Date() }));
         if (!alive) return;
         blobRef.current = blob;
         setReady(true);

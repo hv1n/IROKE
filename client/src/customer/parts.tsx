@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import { NotificationBell } from '../account/NotificationBell';
 import { BackButton } from '../ui';
 import arrowCircle from '../ui/assets/arrow-circle.svg';
 import avatar from '../ui/assets/avatar.png';
@@ -18,11 +19,12 @@ export function PlainHeader({ onBack, end, light }: { onBack?: () => void; end?:
   );
 }
 
-/** 로고만 있는 머리 (탭 화면) */
+/** 로고 + 알림 버튼 머리 (탭 화면, 로그인 뒤) */
 export function BrandHeader() {
   return (
     <header className="brand-header">
       <span>IROKE</span>
+      <NotificationBell />
     </header>
   );
 }
@@ -88,8 +90,19 @@ export function Avatar({ size }: { size: 31 | 77 }) {
 }
 
 /** 가위 등급 아이콘 + N건 해결. 신규 디자이너는 아이콘 대신 중립 배지 */
-export function GradeBadge({ count, temperature, showCount = true }: { count: number; temperature: number; showCount?: boolean }) {
-  const g = gradeOf({ temperature, completedCount: count });
+export function GradeBadge({
+  count,
+  temperature,
+  disputes,
+  showCount = true,
+}: {
+  count: number;
+  temperature: number;
+  /** 최근 90일 이의 제기 수 (다이아 조건) */
+  disputes?: number;
+  showCount?: boolean;
+}) {
+  const g = gradeOf({ temperature, completedCount: count, recentDisputes90d: disputes });
   return (
     <span className={`grade grade--${g.grade}`} title={`${g.name} · ${g.desc}`}>
       {g.grade === 'normal' ? <span className="grade__new">신규</span> : <img src={g.icon} alt={g.name} width={20} height={20} />}

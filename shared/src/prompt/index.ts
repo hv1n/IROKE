@@ -8,7 +8,8 @@ export const PRESERVE_INSTRUCTION =
   'body, clothing, background, lighting, camera angle and framing exactly the same as the first image.';
 
 export type PromptOptions =
-  | { task: 'style'; hasReference: boolean }
+  /** styleDescription: 레퍼런스 없이 만들 때 스타일 특징 한 줄 (v2 비슷한 스타일). 없으면 기존 프롬프트와 같다. */
+  | { task: 'style'; hasReference: boolean; styleDescription?: string }
   | { task: 'tone'; toneLevel: number };
 
 export interface BuiltPrompt {

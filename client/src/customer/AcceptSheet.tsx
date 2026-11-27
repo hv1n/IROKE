@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import type { ResponseCard } from '@iroke/shared';
 import { BottomSheet, Button, Notice } from '../ui';
 import { AVAILABILITY_LABELS, priceText } from './labels';
-import { customerApi } from './mockApi';
+import { customerApi } from './api';
 
 /**
  * 요청내역 - 디자이너확정버튼 (Figma 547:4169).

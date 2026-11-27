@@ -247,3 +247,53 @@
 .license-box__done {
   margin: -48px 0 -44px;
 }
+
+/* ---------- 게시판 필터 · 알림 설정 (WF-D2) ---------- */
+
+.board-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.board-filters__kinds {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.board-filters__kinds .u-chip {
+  flex-shrink: 0;
+}
+
+.board-filters__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alert-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.alert-settings__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.alert-settings__fields:disabled {
+  opacity: 0.45;
+}
+
+.alert-settings__title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}

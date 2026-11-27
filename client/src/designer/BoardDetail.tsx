@@ -4,8 +4,9 @@ import type { BoardDetail as Detail } from '@iroke/shared';
 import { PlainHeader } from '../customer/parts';
 import { historyKinds, profileSummary } from '../flow/lib/labels';
 import { AppScreen, Button, Notice, ScreenTitle } from '../ui';
-import { DIFFICULTY_LABELS } from './Board';
-import { boardCondition, designerApi } from './mockApi';
+import { DIFFICULTY_LABELS } from './labels';
+import { useAuth } from '../account/AuthProvider';
+import { boardCondition, designerApi } from './api';
 
 /** 요청 상세 (Figma 547:5611). 손님 6/6 카드와 같은 모양, 어두운 화면 */
 export function BoardDetail() {
@@ -13,7 +14,7 @@ export function BoardDetail() {
   const navigate = useNavigate();
   const [b, setB] = useState<Detail | null>(null);
   const [error, setError] = useState('');
-  const verified = designerApi.me()?.verifyStatus === 'verified';
+  const verified = useAuth().user?.designer?.verifyStatus === 'verified';
 
   useEffect(() => {
     designerApi
@@ -50,7 +51,7 @@ export function BoardDetail() {
             {b.designImageUrl ? (
               <img src={b.designImageUrl} alt={`${b.styleTag} AI 시안 (얼굴 가림)`} />
             ) : (
-              <span className="hair-card__placeholder">{verified ? '시안 이미지 (목업)' : '얼굴을 가린 시안은\n인증된 디자이너만 볼 수 있어요'}</span>
+              <span className="hair-card__placeholder">{verified ? '시안 이미지를 불러오지 못했어요' : '얼굴을 가린 시안은\n인증된 디자이너만 볼 수 있어요'}</span>
             )}
             <div className="hair-card__info">
               <p className="hair-card__style">{b.styleTag}</p>

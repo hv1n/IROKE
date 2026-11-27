@@ -11,20 +11,37 @@ import { FlowScreen } from '../ui/FlowScreen';
 
 const STYLE_TAG_MAX = 30;
 
+type Item = { kind: 'suggestion' | 'similar'; index: number; tag: string; description: string; diff?: string } | { kind: 'custom' };
+
 /**
  * 4/6 스타일 (Figma 535:3260 추천 · 535:3283 직접입력).
- * 서버 추천 3개를 1/4~3/4 카드로, 마지막 카드는 직접 입력. 추천별 예시 사진이 없어 카드에는 올린 레퍼런스를 보여 준다.
+ * 카드 순서: 이름 후보(AI 추천) → 비슷한 스타일(최대 4개) → 직접 입력. 기본은 이름 후보 1순위.
+ * 추천별 예시 사진이 없어 카드에는 올린 레퍼런스를 보여 준다.
+ * 비슷한 스타일을 고르면 레퍼런스 사진 대신 스타일 설명으로 시안을 만든다 (WF-3 v2 메모).
  */
 export function StyleStep() {
   const { state, dispatch } = useFlow();
   const navigate = useNavigate();
   const { reference, styleAnalysis, styleSource } = state;
-  const suggestions = styleAnalysis?.suggestions ?? [];
+  const items: Item[] = [
+    ...(styleAnalysis?.suggestions ?? []).map((s, index) => ({ kind: 'suggestion' as const, index, tag: s.tag, description: s.description })),
+    ...(styleAnalysis?.similarStyles ?? []).map((s, index) => ({ kind: 'similar' as const, index, tag: s.tag, description: s.description, diff: s.diffFromReference })),
+    { kind: 'custom' as const },
+  ];
+  const initialPos = () => {
+    if (!styleSource) return 0;
+    const found = items.findIndex(
+      (it) =>
+        it.kind === styleSource.chosen &&
+        (it.kind === 'custom' || it.index === (it.kind === 'similar' ? styleSource.similarIndex : styleSource.suggestionIndex)),
+    );
+    return found < 0 ? 0 : found;
+  };
 
   const [phase, setPhase] = useState<'idle' | 'loading' | 'error'>('idle');
   const [errorCode, setErrorCode] = useState<ClientErrorCode>('analysis_failed');
   const [attempt, setAttempt] = useState(0);
-  const [index, setIndex] = useState<number | 'custom'>(styleSource?.chosen === 'custom' ? 'custom' : (styleSource?.suggestionIndex ?? 0));
+  const [pos, setPos] = useState(initialPos);
   const [custom, setCustom] = useState(styleSource?.chosen === 'custom' ? (state.styleTag ?? '') : '');
   const swipe = useRef<number | null>(null);
 
@@ -43,29 +60,30 @@ export function StyleStep() {
         if (!alive) return;
         setErrorCode(err instanceof ApiRequestError ? err.code : 'analysis_failed');
         setPhase('error');
-        setIndex('custom');
+        setPos(0);
       });
     return () => {
       alive = false;
     };
   }, [styleAnalysis, reference, state.referenceId, attempt, dispatch]);
 
-  const total = suggestions.length + 1;
-  const pos = index === 'custom' ? suggestions.length : Math.min(index, suggestions.length);
-  const isCustom = pos === suggestions.length;
-  const current = isCustom ? undefined : suggestions[pos];
-  const tag = isCustom ? custom.trim() : current?.tag;
-  const go = (d: number) => {
-    const next = Math.max(0, Math.min(total - 1, pos + d));
-    setIndex(next === suggestions.length ? 'custom' : next);
-  };
+  const total = items.length;
+  const current = items[Math.min(pos, total - 1)]!;
+  const isCustom = current.kind === 'custom';
+  const tag = current.kind === 'custom' ? custom.trim() : current.tag;
+  const go = (d: number) => setPos((p) => Math.max(0, Math.min(total - 1, p + d)));
 
   const next = () => {
     if (!tag) return;
     dispatch({
       type: 'chooseStyle',
       styleTag: tag,
-      styleSource: isCustom ? { analysis: styleAnalysis, chosen: 'custom' } : { analysis: styleAnalysis, chosen: 'suggestion', suggestionIndex: pos },
+      styleSource:
+        current.kind === 'custom'
+          ? { analysis: styleAnalysis, chosen: 'custom' }
+          : current.kind === 'similar'
+            ? { analysis: styleAnalysis, chosen: 'similar', similarIndex: current.index }
+            : { analysis: styleAnalysis, chosen: 'suggestion', suggestionIndex: current.index },
     });
     navigate('/flow/generate');
   };
@@ -145,14 +163,19 @@ export function StyleStep() {
               />
             </>
           ) : (
-            current && (
-              <>
-                <p className="style-carousel__name">
-                  {current.tag} <span className="style-carousel__tag">AI 추천</span>
+            <>
+              <p className="style-carousel__name">
+                {current.tag} <span className="style-carousel__tag">{current.kind === 'similar' ? '비슷한 스타일' : 'AI 추천'}</span>
+              </p>
+              <p className="style-carousel__desc">{current.description}</p>
+              {current.kind === 'similar' && (
+                <p className="style-carousel__diff">
+                  사진과 다른 점: {current.diff}
+                  <br />
+                  사진 대신 이 설명으로 시안을 만들어요.
                 </p>
-                <p className="style-carousel__desc">{current.description}</p>
-              </>
-            )
+              )}
+            </>
           )}
           {phase === 'error' && (
             <div className="flow-error" role="alert">

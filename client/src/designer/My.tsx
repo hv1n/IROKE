@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../account/AuthProvider';
+import { NotificationBell } from '../account/NotificationBell';
 import { ArrowCircle, Avatar, GradeBadge, PlainHeader } from '../customer/parts';
 import { AppScreen, Button, Notice, ScreenTitle, TabBar } from '../ui';
 import instagram from '../ui/assets/instagram.svg';
 import sparkle from '../ui/assets/remake-other.png';
 import refresh3d from '../ui/assets/remake-same.png';
+import { AlertSettingsSheet } from './AlertSettingsSheet';
 import { VerifyNotice } from './VerifyNotice';
 import { useDesigner } from './useDesigner';
 import { DESIGNER_TABS, DESIGNER_TAB_LABELS } from './tabs';
@@ -17,20 +20,21 @@ export function DesignerMy() {
   const navigate = useNavigate();
   const location = useLocation();
   const notice = (location.state as { notice?: 'verify' | 'saved' } | null)?.notice;
-  const [me, refresh] = useDesigner();
+  const [me] = useDesigner();
+  const [alerts, setAlerts] = useState(false);
   if (!me) return null;
   return (
-    <AppScreen header={<PlainHeader onBack={() => navigate('/pro')} />} tabBar={<TabBar active="my" links={DESIGNER_TABS} labels={DESIGNER_TAB_LABELS} />}>
+    <AppScreen header={<PlainHeader onBack={() => navigate('/pro')} end={<NotificationBell />} />} tabBar={<TabBar active="my" links={DESIGNER_TABS} labels={DESIGNER_TAB_LABELS} />}>
       <ScreenTitle title="마이페이지" />
       {notice === 'verify' && me.verifyStatus === 'pending' && <Notice tone="info">인증을 요청했어요. 영업일 기준 1~2일 걸려요.</Notice>}
       {notice === 'saved' && <Notice tone="info">프로필을 수정했어요.</Notice>}
-      <VerifyNotice onChange={refresh} />
+      {notice !== 'verify' && <VerifyNotice />}
 
       <section className="pro-card">
         <div className="resp-card__head">
           <Avatar size={31} />
           <span className="resp-card__nick">{user?.nickname}</span>
-          <GradeBadge count={me.completedCount} temperature={me.temperature} showCount={false} />
+          <GradeBadge count={me.completedCount} temperature={me.temperature} disputes={me.recentDisputes90d} showCount={false} />
         </div>
         <p className="resp-card__shop">{me.shopName}</p>
         <p className="designer-card__shop">
@@ -66,6 +70,11 @@ export function DesignerMy() {
 
       <ul className="my-menu">
         <li>
+          <button type="button" onClick={() => setAlerts(true)}>
+            새 요청 알림 설정
+          </button>
+        </li>
+        <li>
           <Link to="/">손님 화면으로 전환</Link>
         </li>
         <li>
@@ -80,6 +89,7 @@ export function DesignerMy() {
           </button>
         </li>
       </ul>
+      <AlertSettingsSheet open={alerts} onClose={() => setAlerts(false)} />
     </AppScreen>
   );
 }

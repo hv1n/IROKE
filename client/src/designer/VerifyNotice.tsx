@@ -1,32 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../account/AuthProvider';
 import { Notice } from '../ui';
-import { designerApi, devSetVerify } from './mockApi';
+import { designerApi } from './api';
 
-/** 면허 인증 대기·반려 안내 (디자인 없음). 개발 모드에서는 결과를 바로 정하는 버튼 */
-export function VerifyNotice({ onChange }: { onChange?: () => void }) {
-  const [, force] = useState(0);
-  const me = designerApi.me();
-  if (!me || me.verifyStatus === 'verified') return null;
-  const set = (s: 'verified' | 'rejected') => {
-    devSetVerify(s);
-    force((n) => n + 1);
-    onChange?.();
-  };
+/**
+ * 면허 인증 대기·반려 안내 (디자인 없음).
+ * 승인·반려는 관리자 화면 없이 DB에서 바꾼다 (IROKE_backend README '면허 승인'). 바뀐 상태는 앱을 다시 열면 반영된다.
+ */
+export function VerifyNotice() {
+  const status = useAuth().user?.designer?.verifyStatus;
+  const [reason, setReason] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status !== 'rejected') return;
+    designerApi
+      .verification()
+      .then((v) => setReason(v.rejectReason))
+      .catch(() => undefined);
+  }, [status]);
+
+  if (!status || status === 'verified') return null;
   return (
     <div className="verify-notice">
-      <Notice tone={me.verifyStatus === 'rejected' ? 'error' : 'info'}>
-        {me.verifyStatus === 'pending' ? '면허를 확인하고 있어요. 인증이 끝나면 응답할 수 있어요.' : `인증이 반려됐어요. ${me.rejectReason ?? ''} 프로필 수정에서 다시 올려 주세요.`}
+      <Notice tone={status === 'rejected' ? 'error' : 'info'}>
+        {status === 'pending' ? '면허를 확인하고 있어요. 인증이 끝나면 응답할 수 있어요.' : `인증이 반려됐어요. ${reason ?? ''} 프로필 수정에서 다시 올려 주세요.`}
       </Notice>
-      {import.meta.env.DEV && me.verifyStatus === 'pending' && (
-        <span className="flow-error__actions">
-          <button type="button" className="flow-text-button" onClick={() => set('verified')}>
-            (개발용) 인증 완료로
-          </button>
-          <button type="button" className="flow-text-button" onClick={() => set('rejected')}>
-            (개발용) 반려로
-          </button>
-        </span>
-      )}
     </div>
   );
 }

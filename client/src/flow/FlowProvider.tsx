@@ -121,9 +121,11 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     setJobError(null);
     setJob({ key, startedAt: Date.now() });
     try {
+      // 비슷한 스타일을 고르면 레퍼런스 사진 대신 그 스타일의 특징 한 줄로 만든다
+      const similar = s.styleSource.chosen === 'similar' ? s.styleAnalysis?.similarStyles[s.styleSource.similarIndex ?? -1] : undefined;
       const res = await api.generate({
         selfie: s.selfie,
-        reference: s.reference,
+        ...(similar ? { styleDescription: similar.description } : { reference: s.reference }),
         styleTag: s.styleTag,
         profile: s.profile,
         profileSource: s.profileSource,

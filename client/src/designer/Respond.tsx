@@ -5,7 +5,7 @@ import { PlainHeader } from '../customer/parts';
 import { AVAILABILITY_LABELS } from '../customer/labels';
 import { AppScreen, Button, ChipSelect, Notice, ScreenTitle, TextField } from '../ui';
 import krw from '../ui/assets/krw.svg';
-import { designerApi } from './mockApi';
+import { designerApi } from './api';
 
 const OPTIONS = (['possible', 'conditional'] as Availability[]).map((value) => ({ value, label: AVAILABILITY_LABELS[value] }));
 const MAX = MARKETPLACE_LIMITS.responseCommentMax;

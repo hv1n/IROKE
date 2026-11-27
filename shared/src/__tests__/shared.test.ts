@@ -68,3 +68,21 @@ describe('buildPrompt', () => {
     expect(b).toContain('ash brown');
   });
 });
+
+describe('buildPrompt · 비슷한 스타일 (v2)', () => {
+  it('레퍼런스 없이 특징 한 줄을 넣는다', () => {
+    for (const v of ['v1', 'v2'] as const) {
+      const t = buildPrompt(BASE_PROFILE, '리프컷', { task: 'style', hasReference: false, styleDescription: '얼굴선을 따라 층을 낸 컷' }, v).text;
+      expect(t).toContain('Apply the hairstyle "리프컷".');
+      expect(t).toContain('Style features: 얼굴선을 따라 층을 낸 컷');
+      expect(t).not.toContain('second image');
+      expect(t).toContain(PRESERVE_INSTRUCTION);
+    }
+  });
+  it('특징이 없거나 레퍼런스가 있으면 기존 프롬프트와 같다', () => {
+    const plain = buildPrompt(BASE_PROFILE, 'x', { task: 'style', hasReference: false }).text;
+    expect(plain).not.toContain('Style features');
+    const withRef = buildPrompt(BASE_PROFILE, 'x', { task: 'style', hasReference: true, styleDescription: 'y' }).text;
+    expect(withRef).toBe(buildPrompt(BASE_PROFILE, 'x', { task: 'style', hasReference: true }).text);
+  });
+});
