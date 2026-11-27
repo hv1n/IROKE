@@ -40,7 +40,7 @@ export interface FieldEstimate<T> {
   reason: string;
   /**
    * 판별 불가: 사진으로 값을 정할 수 없음 (예: 머리끝이 사진 밖으로 나감).
-   * 이때 value는 임시 기본값이고, 화면은 '판별 불가'로 보여 주고 직접 고르게 한다. 아직 서버는 보내지 않는다.
+   * 이때 value는 임시 기본값이고, 화면은 '판별 불가'로 보여 주고 직접 고르게 한다. 아직 서버는 보내지 않는다 (프론트 전용 추가)
    */
   undetermined?: boolean;
 }
@@ -81,18 +81,35 @@ export interface StyleSuggestion {
   confidence: Confidence;
 }
 
+/** 레퍼런스와 비슷하지만 다른 스타일 (v2). 고르면 레퍼런스 사진 대신 설명으로 시안을 만든다. */
+export interface SimilarStyle {
+  /** 스타일명 (예: "C컬펌 단발") */
+  tag: string;
+  /** 특징 한 줄 */
+  description: string;
+  /** 레퍼런스보다 다른 점 한 줄 */
+  diffFromReference: string;
+}
+
+/** 비슷한 스타일 최대 개수 */
+export const SIMILAR_STYLE_MAX = 4;
+
 /** 레퍼런스 사진에서 AI가 추천한 스타일명 (적합한 순) */
 export interface StyleAnalysis {
   model: string;
   analyzedAt: string;
   suggestions: StyleSuggestion[];
+  /** v2: 비슷한 스타일 최대 4개. 없으면 [] (화면은 그 영역만 숨김) */
+  similarStyles: SimilarStyle[];
   latencyMs?: number;
 }
 
 export interface StyleSource {
   analysis?: StyleAnalysis;
-  /** 추천 목록에서 골랐는지, 직접 입력했는지 */
-  chosen: 'suggestion' | 'custom';
+  /** 추천 목록에서 골랐는지, 직접 입력했는지, 비슷한 스타일에서 골랐는지(v2) */
+  chosen: 'suggestion' | 'custom' | 'similar';
   /** 고른 추천의 순번 (0부터) */
   suggestionIndex?: number;
+  /** 고른 비슷한 스타일의 순번 (0부터, chosen === 'similar'일 때) */
+  similarIndex?: number;
 }

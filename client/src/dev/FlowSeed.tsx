@@ -50,6 +50,10 @@ const STYLES: StyleAnalysis = {
     { tag: '레이어드컷', description: '층을 많이 내 가볍고 자연스럽게 떨어지는 스타일', confidence: 'medium' },
     { tag: '빌드펌', description: '얼굴 주변에 볼륨을 넣은 굵은 웨이브', confidence: 'low' },
   ],
+  similarStyles: [
+    { tag: '리프컷', description: '얼굴선을 따라 층을 내 가볍게 떨어지는 컷', diffFromReference: '웨이브 없이 층으로만 볼륨을 내요' },
+    { tag: 'C컬펌 단발', description: '끝만 안쪽으로 말린 단정한 단발', diffFromReference: '기장이 더 짧고 손질이 쉬워요' },
+  ],
 };
 
 /**

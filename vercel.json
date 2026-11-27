@@ -5,20 +5,20 @@
       "root": "client",
       "framework": "vite",
       "installCommand": "cd .. && npm ci --include=dev",
-      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-    },
-    "server": {
-      "root": "server",
-      "framework": "hono",
-      "installCommand": "cd .. && npm ci --include=dev",
-      "entrypoint": "src/vercel.ts",
-      "functions": {
-        "src/vercel.ts": { "maxDuration": 120 }
-      }
+      "rewrites": [
+        {
+          "source": "/(.*)",
+          "destination": "/index.html"
+        }
+      ]
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": { "service": "server" } },
-    { "source": "/(.*)", "destination": { "service": "client" } }
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "client"
+      }
+    }
   ]
 }

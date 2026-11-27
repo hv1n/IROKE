@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { BoardItem, Difficulty } from '@iroke/shared';
+import { NotificationBell } from '../account/NotificationBell';
 import { PlainHeader, RequestCardRow } from '../customer/parts';
 import { dday } from '../customer/labels';
 import { AppScreen, Notice, ScreenTitle, TabBar } from '../ui';
@@ -29,7 +30,7 @@ export function Board() {
   const shown = (items ?? []).filter((b) => !query || b.styleTag.includes(query) || b.hairTags.some((t) => t.includes(query)));
 
   return (
-    <AppScreen header={<PlainHeader onBack={() => navigate('/pro')} />} tabBar={<TabBar active="requests" links={DESIGNER_TABS} labels={DESIGNER_TAB_LABELS} />}>
+    <AppScreen header={<PlainHeader onBack={() => navigate('/pro')} end={<NotificationBell />} />} tabBar={<TabBar active="requests" links={DESIGNER_TABS} labels={DESIGNER_TAB_LABELS} />}>
       <ScreenTitle
         title={
           <>

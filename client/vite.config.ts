@@ -6,7 +6,5 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    // API 키는 서버에만 있다. 프론트는 /api 프록시로만 호출한다.
-    proxy: { '/api': 'http://localhost:8787' },
   },
 });

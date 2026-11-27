@@ -1,4 +1,4 @@
-// 서버 API 호출. API 키는 서버에만 있고, 브라우저는 항상 /api를 거친다.
+// 시안 만들기 API 호출 (IROKE_backend, 로그인 없음 · x-iroke-client-id로 구분). API 키는 서버에만 있다.
 import type {
   AnalyzeRequest,
   ApiError,
@@ -10,6 +10,7 @@ import type {
   StatusResponse,
   StyleAnalysis,
 } from '@iroke/shared';
+import { API_V2_URL } from '../account/v2api';
 import type { ClientErrorCode } from './lib/messages';
 import { fitsRequestLimit } from './lib/payload';
 import { getClientId } from './lib/storage';
@@ -29,9 +30,10 @@ async function request<T>(method: string, path: string, body?: unknown, signal?:
   if (payload !== undefined && !fitsRequestLimit(payload)) {
     throw new ApiRequestError('요청 본문이 상한을 넘음', 'payload_too_large');
   }
+  if (!API_V2_URL) throw new ApiRequestError('API 주소(VITE_API_V2_URL)가 설정되지 않음', 'network');
   let res: Response;
   try {
-    res = await fetch(`/api${path}`, {
+    res = await fetch(`${API_V2_URL}${path}`, {
       method,
       headers: { 'content-type': 'application/json', 'x-iroke-client-id': getClientId() },
       body: payload,
