@@ -11,11 +11,6 @@ import {
 } from '@iroke/shared';
 import { LENGTH_SHORT } from '../flow/lib/labels';
 import { RECENT_TREATMENT_DAYS } from '../flow/lib/requestNote';
-import scissorsDiamond from '../ui/assets/scissors-diamond.png';
-import scissorsGold from '../ui/assets/scissors-gold.png';
-import scissorsSilver from '../ui/assets/scissors-silver.png';
-import scissorsBronze from '../ui/assets/scissors-bronze.png';
-import scissorsNormal from '../ui/assets/scissors-normal.png';
 
 export const TIMING_LABELS: Record<Timing, string> = {
   this_week: '이번 주',
@@ -79,17 +74,3 @@ export function dday(expiresAt: string, now = new Date()): string {
   const d = Math.ceil((Date.parse(expiresAt) - now.getTime()) / 86_400_000);
   return d < 0 ? '마감' : d === 0 ? 'D-DAY' : `D-${d}`;
 }
-
-/**
- * 가위 등급. 백엔드에 등급 필드가 없어 완료 매칭 수(verifiedWorkCount)로 화면에서 정한다.
- * 기준은 임시값 (디자인 예시: 1건 일반 · 6건 골드 · 12건 다이아). 만족도 반영은 백엔드 필드가 생기면.
- */
-export type Grade = 'diamond' | 'gold' | 'silver' | 'bronze' | 'normal';
-export const GRADES: { grade: Grade; name: string; desc: string; icon: string; min: number }[] = [
-  { grade: 'diamond', name: '다이아 가위', desc: '전설의 손', icon: scissorsDiamond, min: 10 },
-  { grade: 'gold', name: '골드 가위', desc: '소문난 금손', icon: scissorsGold, min: 6 },
-  { grade: 'silver', name: '실버 가위', desc: '믿고 맡기는 손', icon: scissorsSilver, min: 4 },
-  { grade: 'bronze', name: '브론즈 가위', desc: '단골이 생기는 손', icon: scissorsBronze, min: 2 },
-  { grade: 'normal', name: '일반 가위', desc: '차곡차곡 쌓아가는 손', icon: scissorsNormal, min: 0 },
-];
-export const gradeOf = (verifiedWorkCount: number) => GRADES.find((g) => verifiedWorkCount >= g.min)!;

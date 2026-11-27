@@ -30,6 +30,7 @@ import {
   type UpdateRequestBody,
 } from '@iroke/shared';
 import { loadSavedProfile, saveProfile } from '../flow/lib/storage';
+import { DISPUTE_DELTA, SATISFACTION_DELTA, addTemperature } from './grade';
 import { hairSummary, recentTreatments } from './labels';
 
 const KEY = 'iroke.mock.market';
@@ -67,8 +68,8 @@ const iso = (ms: number) => new Date(ms).toISOString();
 // ── 목업 디자이너 (사진 없음: 화면은 자리표시로 그린다) ─────────────────
 
 const DESIGNERS: (DesignerPublicProfile & { bookingUrl: string; area: string })[] = [
-  { id: 'd1', nickname: '슝슝 디자이너', verified: true, shopName: '숭실헤어 상도점', area: '동작구 상도동', instagram: '@soongsil.hair_official', temperature: 38.0, reviewCount: 12, verifiedWorkCount: 6, manualWorkCount: 5, bookingUrl: 'https://example.com/booking/d1' },
-  { id: 'd2', nickname: '모모 실장', verified: true, shopName: '모모헤어 사당점', area: '동작구 사당동', instagram: null, temperature: 39.2, reviewCount: 30, verifiedWorkCount: 12, manualWorkCount: 8, bookingUrl: 'https://example.com/booking/d2' },
+  { id: 'd1', nickname: '슝슝 디자이너', verified: true, shopName: '숭실헤어 상도점', area: '동작구 상도동', instagram: '@soongsil.hair_official', temperature: 37.6, reviewCount: 5, verifiedWorkCount: 6, manualWorkCount: 5, bookingUrl: 'https://example.com/booking/d1' },
+  { id: 'd2', nickname: '모모 실장', verified: true, shopName: '모모헤어 사당점', area: '동작구 사당동', instagram: null, temperature: 40.4, reviewCount: 27, verifiedWorkCount: 30, manualWorkCount: 8, bookingUrl: 'https://example.com/booking/d2' },
   { id: 'd3', nickname: '하루 디자이너', verified: true, shopName: '하루살롱', area: '관악구 봉천동', instagram: '@haru.salon', temperature: 36.5, reviewCount: 1, verifiedWorkCount: 1, manualWorkCount: 2, bookingUrl: 'https://example.com/booking/d3' },
 ];
 const designer = (did: string) => DESIGNERS.find((d) => d.id === did);
@@ -346,6 +347,7 @@ export const customerApi = {
     const m = s.matches[mid];
     if (!m) throw new MockApiError('매칭을 찾지 못했어요.');
     m.status = 'disputed';
+    m.designer.temperature = addTemperature(m.designer.temperature, DISPUTE_DELTA);
     save(s);
     return wait(undefined);
   },
@@ -357,8 +359,9 @@ export const customerApi = {
     const m = s.matches[mid];
     if (!m) throw new MockApiError('매칭을 찾지 못했어요.');
     m.myReviewWritten = true;
+    m.designer.temperature = addTemperature(m.designer.temperature, SATISFACTION_DELTA[body.satisfaction]);
     save(s);
-    return wait({ reviewId: id(), targetTemperature: m.designer.temperature + (body.satisfaction === 'good' ? 0.3 : 0) });
+    return wait({ reviewId: id(), targetTemperature: m.designer.temperature });
   },
 };
 

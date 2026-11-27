@@ -65,7 +65,7 @@ export function Responses() {
             <div className="resp-card__head">
               <Avatar size={31} />
               <span className="resp-card__nick">{r.designer.nickname}</span>
-              <GradeBadge count={r.designer.verifiedWorkCount} />
+              <GradeBadge count={r.designer.verifiedWorkCount} temperature={r.designer.temperature} />
             </div>
             <p className="resp-card__shop">{r.designer.shopName}</p>
             <p className="resp-card__offer">

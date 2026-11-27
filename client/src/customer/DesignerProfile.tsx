@@ -58,7 +58,7 @@ export function DesignerProfile() {
           <Avatar size={77} />
           <div>
             <p className="designer-card__name">
-              {profile.nickname} <GradeBadge count={profile.verifiedWorkCount} showCount={false} />
+              {profile.nickname} <GradeBadge count={profile.verifiedWorkCount} temperature={profile.temperature} showCount={false} />
             </p>
             <p className="designer-card__shop">
               {profile.shopName} · {profile.area}

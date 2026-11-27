@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { BackButton } from '../ui';
 import arrowCircle from '../ui/assets/arrow-circle.svg';
 import avatar from '../ui/assets/avatar.png';
-import { gradeOf } from './labels';
+import { gradeOf } from './grade';
 
 /** 뒤로 버튼만 있는 머리 (단계 표시 없는 화면) */
 export function PlainHeader({ onBack, end }: { onBack?: () => void; end?: ReactNode }) {
@@ -85,12 +85,12 @@ export function Avatar({ size }: { size: 31 | 77 }) {
   return <img className="avatar" src={avatar} alt="" width={size} height={size} />;
 }
 
-/** 가위 등급 아이콘 + N건 해결 */
-export function GradeBadge({ count, showCount = true }: { count: number; showCount?: boolean }) {
-  const g = gradeOf(count);
+/** 가위 등급 아이콘 + N건 해결. 신규 디자이너는 아이콘 대신 중립 배지 */
+export function GradeBadge({ count, temperature, showCount = true }: { count: number; temperature: number; showCount?: boolean }) {
+  const g = gradeOf({ temperature, completedCount: count });
   return (
     <span className={`grade grade--${g.grade}`} title={`${g.name} · ${g.desc}`}>
-      <img src={g.icon} alt={g.name} width={20} height={20} />
+      {g.grade === 'normal' ? <span className="grade__new">신규</span> : <img src={g.icon} alt={g.name} width={20} height={20} />}
       {showCount && (
         <span>
           <b>{count}건</b> 해결
