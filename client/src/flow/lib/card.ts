@@ -1,53 +1,42 @@
-// 미용사 전달 카드를 Canvas로 그린다. 미리보기와 저장 이미지가 같은 결과가 되도록 한 곳에서만 그린다.
-import {
-  DAMAGE_LABELS,
-  DENSITY_LABELS,
-  LENGTH_LABELS,
-  TEXTURE_LABELS,
-  TREATMENT_LABELS,
-  describeToneLevel,
-  type HairProfile,
-} from '@iroke/shared';
+// 미용사 전달 카드 저장 이미지 (Canvas). 6/6 카드 화면(Figma 459:668)과 같은 모양을 3배 크기로 그린다.
+// 어두운 배경 위에 [시안 사진 + 스타일명·모발 정보] 카드, 그 아래 [요청사항] 반투명 패널. 원본 셀카는 넣지 않는다.
+import type { HairProfile } from '@iroke/shared';
 import { loadImage, makeCanvas } from './image';
+import { historyKinds, profileSummary } from './labels';
 
 export interface CardInput {
+  /** AI 시안 */
   after: string;
-  before: string;
   styleTag: string;
   profile: HairProfile;
   note: string;
   date: Date;
 }
 
+/** 화면 px → 이미지 px */
+const S = 3;
 const W = 1080;
-const P = 72;
-const FONT = 'Inter, "Pretendard Variable", Pretendard, system-ui, sans-serif';
-const INK = '#000';
-const MUTED = '#6c6c6c';
-const LINE = '#dcdcdc';
+const CARD_W = 321 * S;
+const X = Math.round((W - CARD_W) / 2);
+const TOP = 150;
+const BOTTOM = 72;
+
+const BG = '#535353';
+const TEXT = '#f5f5f5';
+const SUBTLE = 'rgba(245, 245, 245, 0.62)';
+const FONT = '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif';
 const FOOTER = 'AI 시안은 참고용이에요. 실제 결과는 모발 상태와 시술 방법에 따라 달라질 수 있어요.';
+
+// 카드 치수 (flow.css .hair-card와 같은 값 × S)
+const PHOTO_H = 444 * S;
+const PHOTO_R = 39 * S;
+const INFO_PAD = { top: 50 * S, side: 31 * S, bottom: 30 * S };
+const STYLE = { size: 22 * S, line: 33 * S, gap: 12 * S };
+const GRID = { cols: 3, colGap: 12 * S, rowGap: 19 * S, label: 11 * S, labelLine: 15 * S, value: 12 * S, valueLine: 16 * S };
+const NOTE = { overlap: 40 * S, padTop: 61 * S, padSide: 22 * S, padBottom: 26 * S, r: 41 * S, title: 17 * S, titleLine: 26 * S, gap: 6 * S, text: 13 * S, textLine: 20 * S };
 
 const font = (weight: number, size: number) => `${weight} ${size}px ${FONT}`;
 const formatDate = (d: Date) => `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-const formatIso = (iso: string) => iso.replaceAll('-', '.');
-
-export function profileRows(profile: HairProfile): [string, string][] {
-  return [
-    ['기장', LENGTH_LABELS[profile.length]],
-    ['모질', TEXTURE_LABELS[profile.texture]],
-    ['숱', DENSITY_LABELS[profile.density]],
-    ['손상도', DAMAGE_LABELS[profile.damage] ?? String(profile.damage)],
-    ['현재 명도', profile.currentLevel != null ? describeToneLevel(profile.currentLevel).label : '모름'],
-  ];
-}
-
-export function historyText(profile: HairProfile): string {
-  if (!profile.history.length) return '입력한 시술 이력 없음';
-  return [...profile.history]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .map((t) => `${TREATMENT_LABELS[t.type]} ${formatIso(t.date)}`)
-    .join(' · ');
-}
 
 /** 한글은 단어가 길어도 글자 단위로 줄바꿈할 수 있어야 한다 */
 function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
@@ -74,123 +63,128 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): st
   return lines;
 }
 
-function roundedImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number, r: number) {
-  // object-fit: cover
+/** 칸보다 길면 글자를 줄여 한 줄에 맞춘다 */
+function fitText(ctx: CanvasRenderingContext2D, text: string, weight: number, size: number, maxWidth: number) {
+  let s = size;
+  ctx.font = font(weight, s);
+  while (s > size * 0.7 && ctx.measureText(text).width > maxWidth) ctx.font = font(weight, --s);
+}
+
+function coverImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
   const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
   const sw = w / scale;
   const sh = h / scale;
-  ctx.save();
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, h, r);
-  ctx.clip();
   ctx.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
-  ctx.restore();
-}
-
-function pillLabel(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
-  ctx.font = font(600, 22);
-  const w = ctx.measureText(text).width + 28;
-  ctx.fillStyle = INK;
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, 40, 20);
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, x + 14, y + 21);
-  ctx.textBaseline = 'alphabetic';
 }
 
 export async function renderCard(input: CardInput): Promise<HTMLCanvasElement> {
-  await Promise.all([document.fonts.load(font(700, 40)), document.fonts.load(font(400, 30)), document.fonts.load(`700 40px "Pretendard Variable"`, '가')]).catch(() => undefined);
-  const [after, before] = await Promise.all([loadImage(input.after), loadImage(input.before)]);
+  await Promise.all([document.fonts.load(font(700, 40), '가'), document.fonts.load(font(400, 30), '가'), document.fonts.load(font(600, 40), '가')]).catch(() => undefined);
+  const after = await loadImage(input.after);
+  const cells: [string, string][] = [...profileSummary(input.profile), ['시술 이력', historyKinds(input.profile)]];
 
   // 1) 높이를 정하기 위해 글줄을 먼저 잰다
   const { ctx: measure } = makeCanvas(1, 1);
-  const inner = W - P * 2;
-  measure.font = font(700, 76);
-  const titleLines = wrap(measure, input.styleTag, inner);
+  measure.font = font(600, STYLE.size);
+  const styleLines = wrap(measure, input.styleTag, CARD_W - INFO_PAD.side * 2);
+  measure.font = font(400, NOTE.text);
+  const noteLines = wrap(measure, input.note.trim() || '-', CARD_W - NOTE.padSide * 2);
   measure.font = font(400, 30);
-  const historyLines = wrap(measure, historyText(input.profile), inner);
-  measure.font = font(400, 34);
-  const noteLines = wrap(measure, input.note.trim() || '-', inner);
-  measure.font = font(400, 22);
-  const footerLines = wrap(measure, FOOTER, inner);
+  const footerLines = wrap(measure, FOOTER, CARD_W);
 
-  const AFTER_W = 620;
-  const AFTER_H = Math.round((AFTER_W * 4) / 3);
-  const SIDE_X = P + AFTER_W + 28;
-  const SIDE_W = W - P - SIDE_X;
-  const BEFORE_H = Math.round((SIDE_W * 4) / 3);
-
-  const titleTop = P + 120;
-  const imagesTop = titleTop + titleLines.length * 82 + 36;
-  const historyTop = imagesTop + AFTER_H + 64;
-  const noteTop = historyTop + 44 + historyLines.length * 44 + 48;
-  const footerTop = noteTop + 52 + noteLines.length * 52 + 48;
-  const H = footerTop + footerLines.length * 34 + P;
+  const rows = Math.ceil(cells.length / GRID.cols);
+  const rowH = GRID.labelLine + GRID.valueLine;
+  const infoH = INFO_PAD.top + styleLines.length * STYLE.line + STYLE.gap + rows * rowH + (rows - 1) * GRID.rowGap + INFO_PAD.bottom;
+  const photoTop = TOP;
+  const noteTop = photoTop + PHOTO_H - NOTE.overlap;
+  const noteH = NOTE.padTop + NOTE.titleLine + NOTE.gap + noteLines.length * NOTE.textLine + NOTE.padBottom;
+  const footerTop = noteTop + noteH + 60;
+  const H = footerTop + footerLines.length * 44 + BOTTOM;
 
   // 2) 그린다
   const { canvas, ctx } = makeCanvas(W, H);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = BG;
   ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = INK;
   ctx.textBaseline = 'alphabetic';
 
-  ctx.font = font(700, 36);
-  ctx.fillText('IROKE', P, P + 30);
-  ctx.font = font(500, 26);
-  ctx.fillStyle = MUTED;
+  // 머리글: IROKE · 날짜
+  ctx.fillStyle = TEXT;
+  ctx.font = font(700, 42);
+  ctx.fillText('IROKE', X, 96);
+  ctx.font = font(500, 30);
+  ctx.fillStyle = SUBTLE;
   ctx.textAlign = 'right';
-  ctx.fillText(formatDate(input.date), W - P, P + 30);
+  ctx.fillText(formatDate(input.date), X + CARD_W, 96);
   ctx.textAlign = 'left';
-  ctx.fillText('HAIR CARD · 미용사님께 보여 주세요', P, P + 84);
 
-  ctx.fillStyle = INK;
-  ctx.font = font(700, 76);
-  titleLines.forEach((line, i) => ctx.fillText(line, P, titleTop + 64 + i * 82));
+  // 요청사항 패널 (사진 카드 뒤로 겹친다)
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+  ctx.shadowBlur = 34 * S;
+  ctx.shadowOffsetX = 6 * S;
+  ctx.shadowOffsetY = 8 * S;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.26)';
+  ctx.beginPath();
+  ctx.roundRect(X, noteTop, CARD_W, noteH, NOTE.r);
+  ctx.fill();
+  ctx.restore();
 
-  roundedImage(ctx, after, P, imagesTop, AFTER_W, AFTER_H, 28);
-  pillLabel(ctx, 'AI 시안', P + 20, imagesTop + 20);
-  roundedImage(ctx, before, SIDE_X, imagesTop, SIDE_W, BEFORE_H, 20);
-  pillLabel(ctx, '지금', SIDE_X + 14, imagesTop + 14);
+  let y = noteTop + NOTE.padTop;
+  ctx.fillStyle = TEXT;
+  ctx.font = font(700, NOTE.title);
+  ctx.fillText('요청사항', X + NOTE.padSide, y + NOTE.titleLine * 0.78);
+  y += NOTE.titleLine + NOTE.gap;
+  ctx.font = font(400, NOTE.text);
+  noteLines.forEach((line, i) => ctx.fillText(line, X + NOTE.padSide, y + NOTE.textLine * 0.78 + i * NOTE.textLine));
 
-  // 오른쪽 열: 모발 상태
-  let y = imagesTop + BEFORE_H + 52;
-  for (const [label, value] of profileRows(input.profile)) {
-    ctx.font = font(500, 22);
-    ctx.fillStyle = MUTED;
-    ctx.fillText(label, SIDE_X, y);
-    ctx.font = font(700, 28);
-    ctx.fillStyle = INK;
-    ctx.fillText(wrap(ctx, value, SIDE_W)[0] ?? '', SIDE_X, y + 38);
-    y += 84;
-  }
+  // 사진 카드
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+  ctx.shadowBlur = 32 * S;
+  ctx.shadowOffsetX = 6 * S;
+  ctx.shadowOffsetY = 8 * S;
+  ctx.fillStyle = '#f5f5f5';
+  ctx.beginPath();
+  ctx.roundRect(X, photoTop, CARD_W, PHOTO_H, PHOTO_R);
+  ctx.fill();
+  ctx.restore();
 
-  const section = (title: string, top: number) => {
-    ctx.strokeStyle = LINE;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(P, top - 28);
-    ctx.lineTo(W - P, top - 28);
-    ctx.stroke();
-    ctx.font = font(600, 24);
-    ctx.fillStyle = MUTED;
-    ctx.fillText(title, P, top + 8);
-  };
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(X, photoTop, CARD_W, PHOTO_H, PHOTO_R);
+  ctx.clip();
+  coverImage(ctx, after, X, photoTop, CARD_W, PHOTO_H);
+  // 아래쪽 정보 영역 그라데이션 (투명 → #212121 72%)
+  const infoTop = photoTop + PHOTO_H - infoH;
+  const grad = ctx.createLinearGradient(0, infoTop, 0, photoTop + PHOTO_H);
+  grad.addColorStop(0, 'rgba(47, 47, 47, 0)');
+  grad.addColorStop(0.72, '#212121');
+  grad.addColorStop(1, '#212121');
+  ctx.fillStyle = grad;
+  ctx.fillRect(X, infoTop, CARD_W, infoH);
 
-  section('시술 이력', historyTop);
+  const left = X + INFO_PAD.side;
+  y = infoTop + INFO_PAD.top;
+  ctx.fillStyle = TEXT;
+  ctx.font = font(600, STYLE.size);
+  styleLines.forEach((line, i) => ctx.fillText(line, left, y + STYLE.line * 0.75 + i * STYLE.line));
+  y += styleLines.length * STYLE.line + STYLE.gap;
+
+  const colW = (CARD_W - INFO_PAD.side * 2 - GRID.colGap * (GRID.cols - 1)) / GRID.cols;
+  cells.forEach(([label, value], i) => {
+    const cx = left + (i % GRID.cols) * (colW + GRID.colGap);
+    const cy = y + Math.floor(i / GRID.cols) * (rowH + GRID.rowGap);
+    ctx.fillStyle = TEXT;
+    fitText(ctx, label, 400, GRID.label, colW);
+    ctx.fillText(label, cx, cy + GRID.labelLine * 0.8);
+    fitText(ctx, value, 700, GRID.value, colW);
+    ctx.fillText(value, cx, cy + GRID.labelLine + GRID.valueLine * 0.8);
+  });
+  ctx.restore();
+
+  // 안내 문구
   ctx.font = font(400, 30);
-  ctx.fillStyle = INK;
-  historyLines.forEach((line, i) => ctx.fillText(line, P, historyTop + 56 + i * 44));
-
-  section('요청 사항', noteTop);
-  ctx.font = font(400, 34);
-  ctx.fillStyle = INK;
-  noteLines.forEach((line, i) => ctx.fillText(line, P, noteTop + 64 + i * 52));
-
-  ctx.font = font(400, 22);
-  ctx.fillStyle = MUTED;
-  footerLines.forEach((line, i) => ctx.fillText(line, P, footerTop + 26 + i * 34));
+  ctx.fillStyle = SUBTLE;
+  footerLines.forEach((line, i) => ctx.fillText(line, X, footerTop + 30 + i * 44));
 
   return canvas;
 }
