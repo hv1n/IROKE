@@ -19,12 +19,14 @@ interface TabBarProps {
   active: TabKey;
   /** 탭별 이동 경로 (손님/미용사가 다르다) */
   links: Record<TabKey, string>;
+  /** 라벨 바꾸기 (디자이너: 요청보기) */
+  labels?: Partial<Record<TabKey, string>>;
   /** 이동 전에 가로챌 때 (미등록 미용사가 요청내역·마이를 누르면 안내 모달). e.preventDefault()로 막는다 */
   onSelect?: (key: TabKey, e: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 /** 하단 탭바 (Figma Component 24: 홈 · 요청내역 · 마이) */
-export function TabBar({ active, links, onSelect }: TabBarProps) {
+export function TabBar({ active, links, labels, onSelect }: TabBarProps) {
   return (
     <nav className="tabbar" aria-label="주요 메뉴">
       <ul>
@@ -39,7 +41,7 @@ export function TabBar({ active, links, onSelect }: TabBarProps) {
                 onClick={(e) => onSelect?.(t.key, e)}
               >
                 <img src={on ? t.on : t.off} alt="" />
-                {t.label}
+                {labels?.[t.key] ?? t.label}
               </Link>
             </li>
           );

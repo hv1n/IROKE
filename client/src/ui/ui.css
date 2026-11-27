@@ -1014,3 +1014,89 @@ button.photo-card {
 .sheet--handle .sheet__title {
   font-size: 22px;
 }
+
+/* ---------- 입력칸 ---------- */
+
+.u-field__label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--u-gray-900);
+}
+
+.u-field:focus-within .u-field__label {
+  color: var(--u-brown-700);
+}
+
+.u-field__box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 20px 0 24px;
+  border: 0.7px solid var(--u-gray-400b);
+  border-radius: 15px;
+  background: transparent;
+}
+
+.u-field:focus-within .u-field__box {
+  border: 1.5px solid var(--u-brown-700);
+  padding: 0 19.2px 0 23.2px;
+}
+
+.u-field.has-error .u-field__box {
+  border-color: var(--u-red);
+}
+
+.u-field__box input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--u-gray-900);
+  font-family: var(--u-font);
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  outline: none;
+}
+
+.u-field__box input::placeholder {
+  color: var(--u-gray-500);
+}
+
+.u-field__suffix {
+  font-size: 17px;
+  color: var(--u-gray-900);
+}
+
+.u-field__clear {
+  display: inline-flex;
+  padding: 6px;
+  margin-right: -6px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.u-field__error {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--u-red);
+}
+
+/* 파란 안내 박스 */
+.info-box {
+  margin: 0;
+  padding: 12px 24px 12px 31px;
+  border: 0.7px solid #387dd6;
+  border-radius: 12px;
+  background: rgba(56, 125, 214, 0.1);
+  color: #387dd6;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-line;
+}

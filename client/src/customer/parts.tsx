@@ -6,12 +6,12 @@ import avatar from '../ui/assets/avatar.png';
 import { gradeOf } from './grade';
 
 /** 뒤로 버튼만 있는 머리 (단계 표시 없는 화면) */
-export function PlainHeader({ onBack, end }: { onBack?: () => void; end?: ReactNode }) {
+export function PlainHeader({ onBack, end, light }: { onBack?: () => void; end?: ReactNode; light?: boolean }) {
   const navigate = useNavigate();
   return (
     <header className="step-header plain-header">
       <div className="step-header__top">
-        <BackButton onClick={onBack ?? (() => navigate(-1))} />
+        <BackButton onClick={onBack ?? (() => navigate(-1))} light={light} />
         {end}
       </div>
     </header>
@@ -44,9 +44,11 @@ export function RequestCardRow({
   styleTag,
   summary,
   note = '이 정보로 요청할게요.',
+  eyebrow = 'AI 시안',
   selected,
   onClick,
 }: {
+  eyebrow?: ReactNode;
   image?: string | null;
   styleTag: string;
   summary: string;
@@ -58,7 +60,7 @@ export function RequestCardRow({
     <>
       <Thumb src={image} alt={`${styleTag} AI 시안`} className="card-row__thumb" />
       <span className="card-row__text">
-        <span className="card-row__eyebrow">AI 시안</span>
+        <span className="card-row__eyebrow">{eyebrow}</span>
         <span className="card-row__title">{styleTag}</span>
         <span className="card-row__sub">
           {summary}

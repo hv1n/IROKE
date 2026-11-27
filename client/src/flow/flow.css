@@ -171,6 +171,7 @@
 }
 
 .camera__guide {
+  white-space: pre-line;
   margin: 29px 0 0;
   font-size: 15px;
   line-height: 1.4;
@@ -180,8 +181,7 @@
 .camera__frame {
   position: relative;
   overflow: hidden;
-  width: 258px;
-  height: 329px;
+  max-width: 100%;
   margin-top: 36px;
   border: 1px solid var(--u-bg);
   border-radius: 10px;
@@ -196,7 +196,7 @@
 }
 
 /* 전면 카메라는 거울처럼 보여 준다 (찍힌 사진은 좌우 그대로) */
-video.camera__video {
+video.camera__video.is-mirror {
   transform: scaleX(-1);
 }
 

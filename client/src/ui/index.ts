@@ -12,3 +12,5 @@ export { PhotoCard } from './PhotoCard';
 export { Checkbox } from './Checkbox';
 export { RangeSlider } from './RangeSlider';
 export { Calendar } from './Calendar';
+export { TextField } from './TextField';
+export { CameraCapture } from './CameraCapture';

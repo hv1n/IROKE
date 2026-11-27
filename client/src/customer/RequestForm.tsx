@@ -2,19 +2,17 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { MARKETPLACE_LIMITS, TIMINGS, type RequestCard, type RequestDetail, type Timing } from '@iroke/shared';
 import { useFlow } from '../flow/FlowProvider';
-import { AppScreen, BottomSheet, Button, Checkbox, ChipSelect, Notice, ScreenTitle } from '../ui';
-import chipRemove from '../ui/assets/chip-remove.svg';
+import { AppScreen, Button, Checkbox, ChipSelect, Notice, ScreenTitle } from '../ui';
 import exchangeIcon from '../ui/assets/exchange.svg';
 import infoBlue from '../ui/assets/info-blue.png';
 import { draftCards, thumbnail } from './cards';
 import { BUDGET_LABELS, TIMING_LABELS, hairSummary, type BudgetChoice } from './labels';
 import { customerApi } from './mockApi';
 import { PlainHeader, RequestCardRow } from './parts';
-import { REGIONS } from './regions';
+import { RegionChips, RegionSheet } from './RegionSheet';
 
 const TIMING_OPTIONS = TIMINGS.map((value) => ({ value, label: TIMING_LABELS[value] }));
 const BUDGET_OPTIONS = (['under_5', '5_10', '10_15', 'over_15', 'proposal'] as BudgetChoice[]).map((value) => ({ value, label: BUDGET_LABELS[value] }));
-const CITY_OPTIONS = Object.keys(REGIONS).map((value) => ({ value, label: value }));
 
 /**
  * 디자이너 구하기 - 자세정보 (Figma 535:3496) · 요청내역 - 수정하기 (535:2372).
@@ -36,7 +34,6 @@ export function RequestForm() {
   const [budget, setBudget] = useState<BudgetChoice | null>(null);
   const [consent, setConsent] = useState(false);
   const [sheet, setSheet] = useState(false);
-  const [city, setCity] = useState('서울');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -119,14 +116,7 @@ export function RequestForm() {
         </button>
         {regions.length > 0 && (
           <div className="u-chips req-regions">
-            {regions.map((r) => (
-              <span key={r} className="u-chip region-chip">
-                <button type="button" className="region-chip__remove" aria-label={`${r} 빼기`} onClick={() => setRegions(regions.filter((x) => x !== r))}>
-                  <img src={chipRemove} alt="" />
-                </button>
-                {r}
-              </span>
-            ))}
+            <RegionChips regions={regions} onChange={setRegions} />
           </div>
         )}
       </section>
@@ -168,30 +158,7 @@ export function RequestForm() {
         )}
       </section>
 
-      <BottomSheet open={sheet} onClose={() => setSheet(false)} title="시술 지역 추가">
-        <ChipSelect label="시·도" value={city} options={CITY_OPTIONS} onChange={setCity} />
-        <div className="u-chips region-list" role="group" aria-label={`${city} 시·군·구`}>
-          {REGIONS[city]!.map((d) => {
-            const value = `${city} ${d}`;
-            const on = regions.includes(value);
-            return (
-              <button
-                key={d}
-                type="button"
-                className={`u-chip${on ? ' is-on' : ''}`}
-                aria-pressed={on}
-                disabled={!on && full}
-                onClick={() => {
-                  setRegions(on ? regions.filter((x) => x !== value) : [...regions, value]);
-                  if (!on && regions.length + 1 >= MARKETPLACE_LIMITS.regionsMax) setSheet(false);
-                }}
-              >
-                {d}
-              </button>
-            );
-          })}
-        </div>
-      </BottomSheet>
+      <RegionSheet open={sheet} onClose={() => setSheet(false)} regions={regions} onChange={setRegions} title="시술 지역 추가" />
     </AppScreen>
   );
 }
