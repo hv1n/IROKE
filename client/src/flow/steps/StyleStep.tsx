@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { Button, Notice, PhotoCard, PillButton } from '../../ui';
+import chevronIcon from '../../ui/assets/chevron-left-gray.svg';
+import pencilIcon from '../../ui/assets/pencil.svg';
 import { ApiRequestError, api } from '../api';
 import { useFlow } from '../FlowProvider';
 import { analysisMessage, type ClientErrorCode } from '../lib/messages';
 import { once } from '../lib/once';
-import { ConfidenceTag } from '../ui/controls';
-import { FlowLayout } from '../ui/FlowLayout';
+import { FlowScreen } from '../ui/FlowScreen';
 
 const STYLE_TAG_MAX = 30;
-type Choice = number | 'custom';
 
+/**
+ * 4/6 스타일 (Figma 535:3260 추천 · 535:3283 직접입력).
+ * 서버 추천 3개를 1/4~3/4 카드로, 마지막 카드는 직접 입력. 추천별 예시 사진이 없어 카드에는 올린 레퍼런스를 보여 준다.
+ */
 export function StyleStep() {
   const { state, dispatch } = useFlow();
   const navigate = useNavigate();
@@ -19,11 +24,9 @@ export function StyleStep() {
   const [phase, setPhase] = useState<'idle' | 'loading' | 'error'>('idle');
   const [errorCode, setErrorCode] = useState<ClientErrorCode>('analysis_failed');
   const [attempt, setAttempt] = useState(0);
-  // 이전에 고른 값이 있으면 복원, 없으면 1순위
-  const [choice, setChoice] = useState<Choice | undefined>(
-    styleSource?.chosen === 'custom' ? 'custom' : styleSource?.suggestionIndex,
-  );
+  const [index, setIndex] = useState<number | 'custom'>(styleSource?.chosen === 'custom' ? 'custom' : (styleSource?.suggestionIndex ?? 0));
   const [custom, setCustom] = useState(styleSource?.chosen === 'custom' ? (state.styleTag ?? '') : '');
+  const swipe = useRef<number | null>(null);
 
   // 같은 레퍼런스는 한 번만 요청한다
   useEffect(() => {
@@ -40,104 +43,127 @@ export function StyleStep() {
         if (!alive) return;
         setErrorCode(err instanceof ApiRequestError ? err.code : 'analysis_failed');
         setPhase('error');
-        setChoice('custom');
+        setIndex('custom');
       });
     return () => {
       alive = false;
     };
   }, [styleAnalysis, reference, state.referenceId, attempt, dispatch]);
 
-  const selected: Choice | undefined = choice ?? (suggestions.length ? 0 : undefined);
-  const tag = selected === 'custom' ? custom.trim() : selected != null ? suggestions[selected]?.tag : undefined;
+  const total = suggestions.length + 1;
+  const pos = index === 'custom' ? suggestions.length : Math.min(index, suggestions.length);
+  const isCustom = pos === suggestions.length;
+  const current = isCustom ? undefined : suggestions[pos];
+  const tag = isCustom ? custom.trim() : current?.tag;
+  const go = (d: number) => {
+    const next = Math.max(0, Math.min(total - 1, pos + d));
+    setIndex(next === suggestions.length ? 'custom' : next);
+  };
 
   const next = () => {
     if (!tag) return;
     dispatch({
       type: 'chooseStyle',
       styleTag: tag,
-      styleSource:
-        selected === 'custom'
-          ? { analysis: styleAnalysis, chosen: 'custom' }
-          : { analysis: styleAnalysis, chosen: 'suggestion', suggestionIndex: selected as number },
+      styleSource: isCustom ? { analysis: styleAnalysis, chosen: 'custom' } : { analysis: styleAnalysis, chosen: 'suggestion', suggestionIndex: pos },
     });
     navigate('/flow/generate');
   };
 
   return (
-    <FlowLayout
+    <FlowScreen
       step={3}
-      badge="Step 4 · Style"
-      title="미용실에서 부를 스타일 이름을 골라 주세요"
-      lead="레퍼런스 사진에 가장 가까운 순서로 추천했어요. 원하는 이름이 없으면 직접 입력해 주세요."
-      actions={
-        <>
-          <Link className="pill pill--ghost pill--lg pill--back" to="/flow/reference">
-            이전
-          </Link>
-          <button type="button" className="pill pill--lg" disabled={!tag} onClick={next}>
-            다음 <span className="pill__arrow" aria-hidden="true">→</span>
-          </button>
-        </>
+      title={'시안으로 만들 스타일을\n골라주세요.'}
+      sub="사진의 스타일과 비슷한 스타일을 함께 추천했어요."
+      bottom={
+        <Button disabled={!tag || phase === 'loading'} onClick={next}>
+          다음
+        </Button>
       }
     >
-      {reference && <img className="reference-thumb" src={reference} alt="올린 레퍼런스 사진" />}
-
-      {phase === 'loading' && (
-        <div className="loading loading--inline" role="status">
-          <span className="spinner" aria-hidden="true" />
-          <p>헤어스타일을 읽고 있어요</p>
+      {phase === 'loading' ? (
+        <div className="style-carousel">
+          <p className="style-carousel__count">&nbsp;</p>
+          <PhotoCard image={reference} alt="올린 레퍼런스 사진" size="md" />
+          <p className="flow-loading" role="status">
+            <span className="u-spinner" aria-hidden="true" />
+            헤어스타일을 읽고 있어요
+          </p>
         </div>
-      )}
-      {phase === 'error' && (
-        <div className="notice notice--error" role="alert">
-          <p>{analysisMessage(errorCode)} 스타일 이름을 직접 입력해서 진행할 수 있어요.</p>
-          <div className="notice__actions">
-            <button type="button" className="pill pill--ghost" onClick={() => setAttempt((n) => n + 1)}>
-              다시 추천받기
-            </button>
+      ) : (
+        <div
+          className="style-carousel"
+          role="group"
+          aria-roledescription="캐러셀"
+          aria-label="스타일 고르기"
+          onPointerDown={(e) => (swipe.current = e.clientX)}
+          onPointerUp={(e) => {
+            if (swipe.current == null) return;
+            const dx = e.clientX - swipe.current;
+            swipe.current = null;
+            if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+          }}
+        >
+          <p className="style-carousel__count" aria-live="polite">
+            {pos + 1}/{total}
+          </p>
+          <div className="style-carousel__stage">
+            {pos > 0 && (
+              <button type="button" className="u-icon-button style-carousel__prev" aria-label="이전 스타일" onClick={() => go(-1)}>
+                <img src={chevronIcon} alt="" />
+              </button>
+            )}
+            {isCustom ? (
+              <div className="photo-card photo-card--md is-empty style-carousel__custom">
+                <span className="photo-card__empty">
+                  <img src={pencilIcon} alt="" />
+                  <span>원하는 스타일 이름을{'\n'}직접 적어 주세요</span>
+                </span>
+              </div>
+            ) : (
+              <PhotoCard image={reference} alt="올린 레퍼런스 사진" size="md" />
+            )}
+            {pos < total - 1 && (
+              <button type="button" className="u-icon-button style-carousel__next" aria-label="다음 스타일" onClick={() => go(1)}>
+                <img src={chevronIcon} alt="" />
+              </button>
+            )}
           </div>
-        </div>
-      )}
-
-      <div className="options" role="radiogroup" aria-label="스타일 이름">
-        {suggestions.map((s, i) => (
-          <label key={s.tag} className="option">
-            <input type="radio" className="visually-hidden" name="style" checked={selected === i} onChange={() => setChoice(i)} />
-            <span className="option__rank" aria-hidden="true">
-              {i + 1}
-            </span>
-            <span className="option__body">
-              <strong>{s.tag}</strong>
-              <span>{s.description}</span>
-            </span>
-            <ConfidenceTag confidence={s.confidence} />
-          </label>
-        ))}
-        {phase !== 'loading' && (
-          <label className="option option--custom">
-            <input type="radio" className="visually-hidden" name="style" checked={selected === 'custom'} onChange={() => setChoice('custom')} />
-            <span className="option__rank" aria-hidden="true">
-              +
-            </span>
-            <span className="option__body">
-              <strong>직접 입력</strong>
+          {isCustom ? (
+            <>
+              <p className="style-carousel__name">
+                직접입력 <img src={pencilIcon} alt="" />
+              </p>
               <input
-                className="text-input"
+                className="u-input"
                 type="text"
                 value={custom}
                 maxLength={STYLE_TAG_MAX}
                 placeholder="예: 레이어드 C컬펌"
                 aria-label="스타일 이름 직접 입력"
-                onFocus={() => setChoice('custom')}
-                onChange={(e) => {
-                  setCustom(e.target.value);
-                  setChoice('custom');
-                }}
+                onChange={(e) => setCustom(e.target.value)}
               />
-            </span>
-          </label>
-        )}
-      </div>
-    </FlowLayout>
+            </>
+          ) : (
+            current && (
+              <>
+                <p className="style-carousel__name">
+                  {current.tag} <span className="style-carousel__tag">AI 추천</span>
+                </p>
+                <p className="style-carousel__desc">{current.description}</p>
+              </>
+            )
+          )}
+          {phase === 'error' && (
+            <div className="flow-error" role="alert">
+              <Notice tone="error">{analysisMessage(errorCode)} 스타일 이름을 직접 입력해서 진행할 수 있어요.</Notice>
+              <div className="flow-error__actions">
+                <PillButton onClick={() => setAttempt((n) => n + 1)}>다시 추천받기</PillButton>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </FlowScreen>
   );
 }

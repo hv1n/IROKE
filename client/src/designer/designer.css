@@ -1,0 +1,249 @@
+/* 디자이너(미용사) 화면 (와이어프레임 v2) */
+
+.reg-section {
+  margin-top: 30px;
+}
+
+.reg-hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--u-gray-500);
+}
+
+.reg-info {
+  margin-top: 32px;
+}
+
+.license-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 161px;
+  border: 1.205px dashed var(--u-gray-500);
+  border-radius: 24.1px;
+  background: var(--u-bg);
+  box-shadow: 3.615px 4.82px 20px rgba(0, 0, 0, 0.1);
+  color: var(--u-gray-500);
+  font-family: var(--u-font);
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+}
+
+.license-box.is-done {
+  border: 1.205px solid var(--u-brown-700);
+  background: #f8eae3;
+  color: var(--u-brown-700);
+}
+
+.license-tips {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin: 68px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(245, 245, 245, 0.5);
+  text-align: center;
+}
+
+.license-tips li {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+}
+
+.license-tips img {
+  height: 50px;
+  margin-bottom: 16px;
+  object-fit: contain;
+}
+
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  margin-top: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--u-gray-400b);
+}
+
+.search-field input {
+  flex: 1;
+  border: 0;
+  background: none;
+  font-family: var(--u-font);
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  outline: none;
+}
+
+.search-field input::placeholder {
+  color: var(--u-gray-400b);
+}
+
+.verify-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.hair-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding-bottom: 140px;
+  background: var(--u-gray-300);
+  color: var(--u-gray-600);
+  font-size: 15px;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.hair-card__warn {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffd8cc;
+}
+
+.respond-condition {
+  margin-top: 13px;
+}
+
+.price-range {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.price-range .u-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.price-range .u-field__box {
+  padding: 0 14px 0 18px;
+}
+
+.price-range__dash {
+  width: 16px;
+  height: 1px;
+  background: var(--u-gray-300);
+}
+
+.resp-tabs {
+  margin-top: 14px;
+}
+
+.resp-tabs .u-chip {
+  border: 0;
+  font-family: var(--u-font);
+}
+
+.app-screen__main > .resp-tabs + .u-notice {
+  margin-top: 14px;
+}
+
+.my-resp {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 13px 16px 16px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.02);
+}
+
+.my-resp.is-muted {
+  opacity: 0.6;
+}
+
+.my-resp__row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.my-resp__row > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.my-resp__row p {
+  margin: 0;
+}
+
+.my-resp__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.my-resp__label--gray,
+.my-resp__label--muted {
+  color: #707577;
+}
+
+.my-resp__label--brown {
+  color: var(--u-brown-700);
+}
+
+.my-resp__label--blue {
+  color: #387dd6;
+}
+
+.my-resp__label--red {
+  color: var(--u-red);
+}
+
+.my-resp__label--blue img {
+  filter: hue-rotate(190deg) saturate(2);
+}
+
+.pro-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 19px 24px 18px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.02);
+}
+
+.pro-card .resp-card__nick {
+  flex: none;
+}
+
+.pro-card .btn {
+  margin-top: 16px;
+}
+
+.portfolio-count {
+  margin: 24px 0 0;
+  font-size: 13px;
+  color: var(--u-gray-500);
+  text-align: right;
+}
+
+.portfolio-list {
+  margin-top: 8px;
+}
+
+/* 업로드 완료 체크: SVG에 그림자 영역이 커서(129px) 겉 크기는 그대로 두고 여백만 줄인다 */
+.license-box__done {
+  margin: -48px 0 -44px;
+}

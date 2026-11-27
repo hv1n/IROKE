@@ -38,6 +38,11 @@ export interface FieldEstimate<T> {
   confidence: Confidence;
   /** 판단 근거 (한국어 한 문장) */
   reason: string;
+  /**
+   * 판별 불가: 사진으로 값을 정할 수 없음 (예: 머리끝이 사진 밖으로 나감).
+   * 이때 value는 임시 기본값이고, 화면은 '판별 불가'로 보여 주고 직접 고르게 한다. 아직 서버는 보내지 않는다.
+   */
+  undetermined?: boolean;
 }
 
 /** 셀카에서 AI가 추정한 모발 특징. 시술 이력은 사진으로 알 수 없어 포함하지 않는다. */
