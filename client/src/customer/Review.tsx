@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import type { MatchDetail, PromiseKept, ReviewManner, Satisfaction } from '@iroke/shared';
 import { AppScreen, Button, ChipSelect, Notice, ScreenTitle } from '../ui';
 import { customerApi } from './api';
-import { PlainHeader } from './parts';
+import { LoadFailed, PlainHeader } from './parts';
 
 const MANNER = [
   { value: 'bad' as ReviewManner, label: '아쉬워요' },
@@ -46,6 +46,11 @@ export function Review() {
       setError((e as Error).message);
     }
   };
+
+  if (!m && error) return <LoadFailed message={error} />;
+  if (m?.myReviewWritten) return <LoadFailed title="이미 후기를 남겼어요." message="후기는 매칭마다 한 번만 남길 수 있어요." />;
+  if (m?.status === 'disputed') return <LoadFailed title="후기를 남길 수 없는 시술이에요." message="이의를 접수한 시술은 IROKE가 확인한 뒤 처리돼요." />;
+  if (m && m.status !== 'completed') return <LoadFailed title="아직 후기를 남길 수 없어요." message="시술 완료를 확인한 뒤에 후기를 남길 수 있어요." />;
 
   return (
     <AppScreen

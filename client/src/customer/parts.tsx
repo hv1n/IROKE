@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { NotificationBell } from '../account/NotificationBell';
-import { BackButton } from '../ui';
+import { AppScreen, BackButton, Button, Notice, ScreenTitle } from '../ui';
 import arrowCircle from '../ui/assets/arrow-circle.svg';
 import avatar from '../ui/assets/avatar.png';
 import { gradeOf } from './grade';
@@ -122,5 +122,16 @@ export function ArrowCircle() {
       <img src={arrowCircle} alt="" />
       <span>→</span>
     </span>
+  );
+}
+
+/** 화면에 필요한 데이터를 못 불러왔을 때 (없는 요청·매칭, 권한 없음 등). 빈 화면의 버튼 대신 안내와 돌아갈 곳만 보여 준다 */
+export function LoadFailed({ message, title = '열 수 없어요.', to = '/requests', label = '요청내역으로' }: { message: string; title?: string; to?: string; label?: string }) {
+  const navigate = useNavigate();
+  return (
+    <AppScreen header={<PlainHeader />} bottom={<Button onClick={() => navigate(to, { replace: true })}>{label}</Button>}>
+      <ScreenTitle title={title} />
+      <Notice tone="error">{message}</Notice>
+    </AppScreen>
   );
 }

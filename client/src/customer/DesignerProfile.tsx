@@ -7,7 +7,7 @@ import instagram from '../ui/assets/instagram.svg';
 import { AcceptSheet } from './AcceptSheet';
 import { hairSummary } from './labels';
 import { customerApi } from './api';
-import { Avatar, GradeBadge, PlainHeader, Thumb } from './parts';
+import { Avatar, GradeBadge, LoadFailed, PlainHeader, Thumb } from './parts';
 
 type Tab = 'verified' | 'manual' | 'reviews';
 const SATISFACTION = { good: '만족', ok: '보통', bad: '아쉬움' } as const;
@@ -55,6 +55,8 @@ export function DesignerProfile() {
     ...(profile?.manualWorkCount ? ([['manual', `일반 작업물 ${profile.manualWorkCount}`]] as [Tab, string][]) : []),
     ['reviews', `후기 ${profile?.reviewCount ?? 0}`],
   ];
+
+  if (!profile && error) return <LoadFailed message={error} label="뒤로 가기" to={requestId ? `/requests/${requestId}/responses` : '/requests'} />;
 
   return (
     <AppScreen

@@ -5,7 +5,7 @@ import { AppScreen, BottomSheet, Button, Checkbox, ChipSelect, Notice, PhotoCard
 import { hairSummary } from './labels';
 import { customerApi } from './api';
 import { originalOr } from './local';
-import { PlainHeader, RequestCardRow } from './parts';
+import { LoadFailed, PlainHeader, RequestCardRow } from './parts';
 import { useResultPhotos } from './useResultPhotos';
 
 const SLOTS = ['정면', '옆·뒤'] as const;
@@ -35,6 +35,10 @@ export function MatchConfirm() {
       .then(setM)
       .catch((e: Error) => setError(e.message));
   }, [id]);
+
+  if (!m && error) return <LoadFailed message={error} />;
+  if (m && m.status !== 'complete_requested')
+    return <LoadFailed title="이미 처리된 요청이에요." message="완료 확인은 디자이너가 완료를 요청한 뒤 한 번만 할 수 있어요." />;
 
   const date = m?.completeRequestedAt ? new Date(m.completeRequestedAt) : null;
   const confirm = async () => {
