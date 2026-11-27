@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { SparkleIcon } from './icons';
 import { RingCarousel } from './RingCarousel';
 import type { RingImage } from './RingCarousel';
@@ -15,7 +15,8 @@ const PROJECT_IMAGES: RingImage[] = [
 
 const HEADLINE = ['혼자 고민하던 헤어스타일', 'IROKE와 함께', '시작해보세요.'];
 
-export function Hero() {
+/** 링 캐러셀 + 헤드라인 + 시작 버튼들 (actions) */
+export function Hero({ actions }: { actions: ReactNode }) {
   return (
     <main className="hero">
       <RingCarousel images={PROJECT_IMAGES} cardW={330} cardH={412} />
@@ -24,7 +25,7 @@ export function Hero() {
         <div className="hero__intro">
           <p className="badge">
             <SparkleIcon />
-            Your personal productivity buddy
+            No more salon regrets
           </p>
           <h1 className="headline">
             {HEADLINE.map((line, i) => (
@@ -36,17 +37,16 @@ export function Hero() {
             ))}
           </h1>
         </div>
-
-        <div className="hero__aside">
-          <p>
-            I'm a multidisciplinary designer focused on creating bold visual identities, and digital experiences for
-            brands and businesses.
-          </p>
-          <Link className="pill" to="/profile">
-            모발 프로필 등록/확인 <span className="pill__arrow" aria-hidden="true">→</span>
-          </Link>
-        </div>
+        <div className="hero__cta">{actions}</div>
       </div>
     </main>
+  );
+}
+
+export function HomeLink({ to, children }: { to: string; children: ReactNode }) {
+  return (
+    <Link className="home-button" to={to}>
+      {children}
+    </Link>
   );
 }

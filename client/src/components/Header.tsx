@@ -1,31 +1,21 @@
 import { Link } from 'react-router';
 
-const NAV = [
-  { label: 'Home', href: '#', current: true },
-  { label: 'Services', href: '#services' },
-  { label: 'Contact', href: '#contact' },
-];
-
-export function Header() {
+/** 맨 위: 로고 + 고객/디자이너 전환 (Figma 홈 459:1022 · 521:1625 Nav) */
+export function Header({ role = 'customer' }: { role?: 'customer' | 'designer' }) {
   return (
     <header className="header">
-      <a className="header__brand" href="#">
+      <Link className="header__brand" to="/">
         IROKE
-      </a>
-      <nav className="nav" aria-label="Main">
-        <ul>
-          {NAV.map((item) => (
-            <li key={item.label}>
-              <a href={item.href} aria-current={item.current ? 'page' : undefined}>
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <Link className="pill" to="/start">
-        어울리는 머리 찾기
       </Link>
+      <nav className="role-switch" aria-label="화면 전환">
+        <Link to="/" aria-current={role === 'customer' ? 'page' : undefined}>
+          고객
+        </Link>
+        <span aria-hidden="true">/</span>
+        <Link to="/pro" aria-current={role === 'designer' ? 'page' : undefined}>
+          디자이너
+        </Link>
+      </nav>
     </header>
   );
 }

@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
+import { AuthProvider } from './account/AuthProvider';
+import { KakaoCallback } from './account/KakaoCallback';
 import { Landing } from './components/Landing';
 import { flowRoutes } from './flow/routes';
 
@@ -9,8 +11,10 @@ const FlowSeed = import.meta.env.DEV ? lazy(() => import('./dev/FlowSeed')) : nu
 
 export default function App() {
   return (
+    <AuthProvider>
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
       <Route element={flowRoutes.layout}>
         {flowRoutes.children.map((r) => (
           <Route key={r.path} path={r.path} element={r.element} />
@@ -38,5 +42,6 @@ export default function App() {
       )}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </AuthProvider>
   );
 }

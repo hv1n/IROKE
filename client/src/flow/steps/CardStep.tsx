@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { BottomSheet, Button, Modal, PillButton } from '../../ui';
+import { useAuth } from '../../account/AuthProvider';
+import { BottomSheet, Button, Modal, Notice, PillButton } from '../../ui';
 import pencilWhite from '../../ui/assets/pencil-white.svg';
 import refreshIcon from '../../ui/assets/refresh.svg';
 import remakeOther from '../../ui/assets/remake-other.png';
@@ -18,8 +19,10 @@ const fileName = () => `iroke-hair-card-${new Date().toISOString().slice(0, 10).
 /**
  * 6/6 전달카드.
  * - 시안완성 (Figma 459:648) + 다시제작 시트 (459:734)
- * - ?view=card 카드제작완성 (459:668) + 디자이너 구할까요? 팝업 (521:2138, 로그인 분기는 3단계)
+ * - ?view=card 카드제작완성 (459:668) + 디자이너 구할까요? 팝업 (로그인 459:1387 · 비로그인 521:2138)
  */
+const DESIGNER_REQUEST = '/designer-request';
+
 export function CardStep() {
   const { state, dispatch, status, promptVersion, startGeneration } = useFlow();
   const navigate = useNavigate();
@@ -35,6 +38,8 @@ export function CardStep() {
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState(note);
   const [askDesigner, setAskDesigner] = useState(false);
+  const { user, mode, login } = useAuth();
+  const [loginError, setLoginError] = useState('');
   const [message, setMessage] = useState('');
   const blobRef = useRef<Blob | null>(null);
   const [ready, setReady] = useState(false);
@@ -143,7 +148,7 @@ export function CardStep() {
           <Button variant="glass" onClick={save} disabled={!ready}>
             이미지저장
           </Button>
-          <Button onClick={() => setAskDesigner(true)}>기록하기</Button>
+          <Button onClick={() => setAskDesigner(true)}>디자이너 구하기</Button>
         </div>
       }
     >
@@ -215,18 +220,41 @@ export function CardStep() {
         )}
       </BottomSheet>
 
-      {/* 로그인 여부에 따른 분기·카카오 로그인은 3단계에서 연결한다 */}
+      {/* 로그인 O: 바로 디자이너 구하기 · 로그인 X: 카카오 로그인 뒤 디자이너 구하기로 돌아온다 */}
       <Modal
         open={askDesigner}
         onClose={() => setAskDesigner(false)}
         eyebrow="NEW"
         title={'이 카드로 디자이너를\n구해볼까요?'}
-        body={'디자이너에게 시안을 제안하려면\n로그인이 필요해요.'}
+        body={
+          user
+            ? '지역을 정해 올리면 이 머리를 할 수 있는\n디자이너가 가능 여부와 가격대를 알려줘요.'
+            : '디자이너에게 시안을 제안하려면\n로그인이 필요해요.'
+        }
         actions={
           <>
-            <Button size="sm" onClick={() => navigate('/')}>
-              로그인하러 가기 →
-            </Button>
+            {user ? (
+              <Button size="sm" onClick={() => navigate(DESIGNER_REQUEST)}>
+                디자이너 구하기 →
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={async () => {
+                  setLoginError('');
+                  try {
+                    await login(DESIGNER_REQUEST);
+                    // 카카오는 페이지를 떠났다가 돌아온다. 개발용 로그인은 바로 이어 간다
+                    if (mode !== 'kakao') navigate(DESIGNER_REQUEST);
+                  } catch (err) {
+                    setLoginError((err as Error).message);
+                  }
+                }}
+              >
+                로그인하러 가기 →
+              </Button>
+            )}
+            {loginError && <Notice tone="error">{loginError}</Notice>}
             <Button size="sm" variant="secondary" onClick={() => setAskDesigner(false)}>
               지금은 안할래요
             </Button>

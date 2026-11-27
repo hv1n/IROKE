@@ -13,6 +13,7 @@ import {
   type Treatment,
   type TreatmentType,
 } from '@iroke/shared';
+import { useAuth } from '../../account/AuthProvider';
 import { BottomSheet, Button, Calendar, ChipSelect, FieldButton, Notice, PhotoCard, PillButton, RangeSlider, WheelPicker } from '../../ui';
 import removeIcon from '../../ui/assets/remove-row.svg';
 import { ApiRequestError, api } from '../api';
@@ -82,6 +83,7 @@ export function ProfileStep() {
   const [draftType, setDraftType] = useState<TreatmentType>('color');
   const [draftDate, setDraftDate] = useState<string>();
   const { selfie, profile, analysis } = state;
+  const { saveHairProfile } = useAuth();
 
   /** AI 분석. 결과는 초안이 되고, 시술 이력은 유지된다 (setAnalysis). 화면을 떠나면 결과를 버린다. */
   const analyze = useCallback(
@@ -162,6 +164,8 @@ export function ProfileStep() {
     saveProfile({ profile, confirmedAt: profileSource.confirmedAt });
     // AI 원본 추정값 + 고친 항목 기록 (실패해도 진행은 막지 않는다)
     api.confirmProfile({ profile, profileSource }).catch(() => undefined);
+    // 로그인했으면 서버 모발 프로필에도 저장 (디자이너 구하기·다음 방문에 쓴다)
+    saveHairProfile({ profile, profileSource });
     navigate(selfie ? '/flow/reference' : '/start');
   };
 
