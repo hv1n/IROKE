@@ -4,7 +4,7 @@ import type { BoardDetail as Detail } from '@iroke/shared';
 import { PlainHeader } from '../customer/parts';
 import { historyKinds, profileSummary } from '../flow/lib/labels';
 import { AppScreen, Button, Notice, ScreenTitle } from '../ui';
-import { DIFFICULTY_LABELS } from './Board';
+import { DIFFICULTY_LABELS } from './labels';
 import { useAuth } from '../account/AuthProvider';
 import { boardCondition, designerApi } from './api';
 

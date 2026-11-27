@@ -35,10 +35,7 @@ export interface GradeInput {
   temperature: number;
   /** 완료된 매칭 수 (7일 미확인 자동 완료 포함) = verifiedWorkCount */
   completedCount: number;
-  /**
-   * 최근 90일 이의 제기 수. 백엔드 응답에 아직 없다 → 모르면(undefined) 다이아는 주지 않는다.
-   * TODO(백엔드): DesignerPublicProfile·ResponseCard.designer에 필드 추가 필요
-   */
+  /** 최근 90일 이의 제기 수 (백엔드 recentDisputes90d). 모르면(undefined) 다이아는 주지 않는다 */
   recentDisputes90d?: number;
 }
 
@@ -49,8 +46,8 @@ export function gradeOf({ temperature, completedCount, recentDisputes90d }: Grad
 }
 
 /**
- * 시술 1건마다 바뀌는 온도. 기준은 만족도 5점 척도(5:+0.2 4:+0.1 3:0 2:-0.2 1:-0.4),
- * 백엔드·후기 화면은 3단계라 만족=5, 보통=3, 아쉬움=1점으로 둔다 (확인 필요).
+ * 시술 1건마다 바뀌는 온도 (백엔드 TEMPERATURE_DELTA와 같은 값, 실제 반영은 백엔드가 한다).
+ * 기준은 만족도 5점 척도(5:+0.2 4:+0.1 3:0 2:-0.2 1:-0.4). 후기 화면은 3단계라 만족=5, 보통=3, 아쉬움=1점.
  */
 export const SATISFACTION_DELTA: Record<Satisfaction, number> = { good: 0.2, ok: 0, bad: -0.4 };
 /** 손님 이의 제기로 요청 종료 */

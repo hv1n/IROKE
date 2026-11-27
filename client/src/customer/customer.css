@@ -1062,3 +1062,7 @@ a.btn {
   font-size: 11px;
   color: var(--u-gray-600);
 }
+
+.similar-filter {
+  margin-top: 12px;
+}
