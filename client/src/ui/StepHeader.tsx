@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import backWhite from './assets/back-white.svg';
 import backIcon from './assets/back.svg';
 
 interface StepHeaderProps {
@@ -11,15 +12,17 @@ interface StepHeaderProps {
   onBack?: () => void;
   /** 오른쪽 위 (개발 모드 표시, 처음부터 버튼 등) */
   end?: ReactNode;
+  /** dark: 어두운 배경 위 (카드 완성 화면) */
+  tone?: 'light' | 'dark';
 }
 
 /** 뒤로 · n/6 · 단계 이름 · 진행선 */
-export function StepHeader({ step, total = 6, label, onBack, end }: StepHeaderProps) {
+export function StepHeader({ step, total = 6, label, onBack, end, tone = 'light' }: StepHeaderProps) {
   const navigate = useNavigate();
   return (
-    <header className="step-header">
+    <header className={`step-header${tone === 'dark' ? ' step-header--dark' : ''}`}>
       <div className="step-header__top">
-        <BackButton onClick={onBack ?? (() => navigate(-1))} />
+        <BackButton onClick={onBack ?? (() => navigate(-1))} light={tone === 'dark'} />
         {end}
       </div>
       <p className="step-header__count">
@@ -35,10 +38,10 @@ export function StepHeader({ step, total = 6, label, onBack, end }: StepHeaderPr
   );
 }
 
-export function BackButton({ onClick, label = '뒤로' }: { onClick: () => void; label?: string }) {
+export function BackButton({ onClick, label = '뒤로', light }: { onClick: () => void; label?: string; light?: boolean }) {
   return (
     <button type="button" className="u-icon-button" onClick={onClick} aria-label={label}>
-      <img src={backIcon} alt="" />
+      <img src={light ? backWhite : backIcon} alt="" />
     </button>
   );
 }

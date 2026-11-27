@@ -5,6 +5,7 @@ import { flowRoutes } from './flow/routes';
 
 // 개발 모드에서만 공통 컴포넌트 확인 화면을 연다 (배포 번들에는 들어가지 않음)
 const UiPreview = import.meta.env.DEV ? lazy(() => import('./dev/UiPreview')) : null;
+const FlowSeed = import.meta.env.DEV ? lazy(() => import('./dev/FlowSeed')) : null;
 
 export default function App() {
   return (
@@ -21,6 +22,16 @@ export default function App() {
           element={
             <Suspense>
               <UiPreview />
+            </Suspense>
+          }
+        />
+      )}
+      {FlowSeed && (
+        <Route
+          path="/dev/flow"
+          element={
+            <Suspense>
+              <FlowSeed />
             </Suspense>
           }
         />

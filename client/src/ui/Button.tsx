@@ -1,7 +1,8 @@
 import type { ButtonHTMLAttributes } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary';
+  /** glass·light: 어두운 배경 위 (촬영·카드 화면) */
+  variant?: 'primary' | 'secondary' | 'glass' | 'light';
   /** lg 57px(하단 버튼) · md 50px(카드 안) · sm 46px(모달 안) */
   size?: 'lg' | 'md' | 'sm';
 }

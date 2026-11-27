@@ -620,3 +620,326 @@ html:has(dialog[open]) {
 .u-dialog:focus {
   outline: none;
 }
+
+/* ---------- 어두운 화면 (촬영·카드 완성) ---------- */
+
+.app-screen--dark {
+  /* Figma: 시안 화면 위 rgba(0,0,0,0.66) 덮개 = #535353 */
+  background: #535353;
+  color: var(--u-bg);
+}
+
+.app-screen--dark .bottom-bar {
+  background: linear-gradient(to top, #535353 75%, rgba(83, 83, 83, 0));
+}
+
+.app-screen--dark .screen-title h1,
+.app-screen--dark .screen-title p {
+  color: var(--u-bg);
+}
+
+.step-header--dark .step-header__count,
+.step-header--dark .step-header__label {
+  color: var(--u-bg);
+}
+
+.step-header--dark .progress li {
+  background: rgba(245, 245, 245, 0.4);
+}
+
+.step-header--dark .progress li.is-on {
+  background: var(--u-bg);
+}
+
+.btn--glass {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--u-bg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.btn--light {
+  background: var(--u-bg);
+  color: var(--u-ink);
+}
+
+.btn--primary:disabled {
+  background: var(--u-gray-400b);
+  opacity: 1;
+}
+
+.pill-button {
+  gap: 5px;
+}
+
+.pill-button--light {
+  border-color: var(--u-bg);
+  color: var(--u-bg);
+}
+
+/* ---------- 사진 카드 ---------- */
+
+.photo-card {
+  position: relative;
+  display: block;
+  flex: none;
+  overflow: hidden;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 23.584px;
+  background: var(--u-gray-200);
+  box-shadow: 3.538px 4.717px 19.575px rgba(0, 0, 0, 0.1);
+  cursor: default;
+}
+
+button.photo-card {
+  cursor: pointer;
+}
+
+.photo-card--lg {
+  width: 204px;
+  height: 258px;
+}
+
+.photo-card--md {
+  width: 190.571px;
+  height: 241.243px;
+  border-radius: 22.031px;
+}
+
+.photo-card--sm {
+  width: 162.731px;
+  height: 206px;
+  border-radius: 18.813px;
+}
+
+.photo-card > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-card.is-empty {
+  border: 1.179px dashed var(--u-gray-500);
+  background: var(--u-bg);
+}
+
+.photo-card__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 100%;
+  color: var(--u-gray-500);
+  font-family: var(--u-font);
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+}
+
+.photo-caption {
+  margin: 20px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--u-gray-500);
+  text-align: center;
+}
+
+.photo-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+/* ---------- 체크박스 ---------- */
+
+.u-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--u-gray-900);
+  cursor: pointer;
+}
+
+.u-check__box {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--u-gray-900);
+  border-radius: 4px;
+  background: var(--u-bg);
+}
+
+.u-check__box img {
+  display: block;
+}
+
+.u-check:has(input:checked) .u-check__box {
+  border: 0;
+  background: none;
+}
+
+.u-check:has(input:focus-visible) .u-check__box {
+  outline: 2px solid var(--u-gray-900);
+  outline-offset: 2px;
+}
+
+/* ---------- 슬라이더 ---------- */
+
+.u-range__input {
+  --pct: 50%;
+  width: calc(100% + 6px);
+  height: 24px;
+  margin: 0 -3px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.u-range__input::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 5px;
+  background: linear-gradient(to right, var(--u-gray-900) var(--pct), var(--u-gray-300) var(--pct));
+}
+
+.u-range__input::-moz-range-track {
+  height: 5px;
+  border-radius: 5px;
+  background: linear-gradient(to right, var(--u-gray-900) var(--pct), var(--u-gray-300) var(--pct));
+}
+
+.u-range__input::-webkit-slider-thumb {
+  width: 19px;
+  height: 19px;
+  margin-top: -7px;
+  border: 0.56px solid var(--u-gray-500b);
+  border-radius: 50%;
+  background: var(--u-bg);
+  box-shadow: 1.12px 1.12px 2.12px rgba(0, 0, 0, 0.07);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.u-range__input::-moz-range-thumb {
+  width: 19px;
+  height: 19px;
+  border: 0.56px solid var(--u-gray-500b);
+  border-radius: 50%;
+  background: var(--u-bg);
+  box-shadow: 1.12px 1.12px 2.12px rgba(0, 0, 0, 0.07);
+}
+
+.u-range__input:focus-visible {
+  outline: none;
+}
+
+.u-range__input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--u-gray-900);
+  outline-offset: 2px;
+}
+
+.u-range__scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--u-gray-500);
+}
+
+/* ---------- 달력 ---------- */
+
+.u-cal__head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.u-cal__title {
+  flex: 1;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--u-ink);
+}
+
+.u-cal__head .u-icon-button {
+  margin: -10px -6px;
+}
+
+.u-cal__head .u-icon-button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.u-cal__next {
+  transform: scaleX(-1);
+}
+
+.u-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 37.625px);
+  justify-content: center;
+  gap: 4px 10px;
+  margin-top: 8px;
+}
+
+.u-cal__week {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 37.625px;
+  font-size: 13px;
+  color: var(--u-gray-400);
+}
+
+.u-cal__day {
+  height: 37.625px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--u-gray-600);
+  font-family: var(--u-font);
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+}
+
+.u-cal__day.is-out,
+.u-cal__day:disabled {
+  color: var(--u-gray-300);
+}
+
+.u-cal__day:disabled {
+  cursor: default;
+}
+
+.u-cal__day.is-on {
+  background: var(--u-gray-900);
+  color: var(--u-bg);
+}
+
+.modal__eyebrow {
+  margin: 16px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--u-brown-700);
+}
+
+.modal__eyebrow + .modal__title {
+  margin-top: 8px;
+}

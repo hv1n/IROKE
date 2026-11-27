@@ -4,6 +4,7 @@ import {
   AppScreen,
   BottomSheet,
   Button,
+  Calendar,
   Card,
   ChipSelect,
   FieldButton,
@@ -32,6 +33,16 @@ export default function UiPreview() {
   const [modal, setModal] = useState(view === 'modal');
   const [regions, setRegions] = useState(['동작구', '관악구']);
   const tab = (params.get('tab') as TabKey | null) ?? 'home';
+
+  if (view === 'calendar') {
+    return (
+      <AppScreen>
+        <BottomSheet open onClose={() => undefined} title="시술날짜 선택" footer={<Button>확인</Button>}>
+          <Calendar value="2026-11-20" max="2026-11-27" onChange={() => undefined} />
+        </BottomSheet>
+      </AppScreen>
+    );
+  }
 
   if (view === 'tabs') {
     return (

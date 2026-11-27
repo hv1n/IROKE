@@ -8,13 +8,13 @@ interface AppScreenProps {
   bottom?: ReactNode;
   /** 하단 탭바. 넣으면 본문 아래 여백을 탭바만큼 둔다 */
   tabBar?: ReactNode;
-  tone?: 'gray' | 'white';
+  tone?: 'gray' | 'white' | 'dark';
   children: ReactNode;
 }
 
 /** 모바일 390px 한 화면. 본문은 좌우 24px 여백 */
 export function AppScreen({ header, bottom, tabBar, tone = 'gray', children }: AppScreenProps) {
-  const cls = `app-screen${tone === 'white' ? ' app-screen--white' : ''}${tabBar ? ' app-screen--tabbar' : ''}`;
+  const cls = `app-screen${tone === 'gray' ? '' : ` app-screen--${tone}`}${tabBar ? ' app-screen--tabbar' : ''}`;
   return (
     <div className={cls}>
       {header}

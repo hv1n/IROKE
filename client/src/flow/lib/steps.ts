@@ -3,12 +3,12 @@ import type { PromptVersion } from '@iroke/shared';
 import { currentGeneration, type FlowState } from './state';
 
 export const STEPS = [
-  { path: '/start', label: '셀카' },
-  { path: '/flow/profile', label: '모발 확인' },
+  { path: '/start', label: '셀카등록' },
+  { path: '/flow/profile', label: '모발확인' },
   { path: '/flow/reference', label: '레퍼런스' },
   { path: '/flow/style', label: '스타일' },
   { path: '/flow/generate', label: 'AI 시술' },
-  { path: '/flow/card', label: '전달 카드' },
+  { path: '/flow/card', label: '전달카드' },
 ] as const;
 
 /** 단계별 완료 여부 */

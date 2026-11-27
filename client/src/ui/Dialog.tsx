@@ -57,15 +57,17 @@ interface ModalProps {
   actions: ReactNode;
   /** 맨 위 i 아이콘 */
   icon?: boolean;
+  /** 아이콘 대신 맨 위 작은 갈색 글자 (NEW) */
+  eyebrow?: string;
 }
 
 /** 가운데 팝업 (디자이너 구할까요?, 요청 내리기 확인 등) */
-export function Modal({ open, onClose, title, body, actions, icon = true }: ModalProps) {
+export function Modal({ open, onClose, title, body, actions, icon = true, eyebrow }: ModalProps) {
   const id = useId();
   return (
     <Dialog open={open} onClose={onClose} className="modal" labelledBy={id}>
       <div className="modal__inner">
-        {icon && <img src={infoIcon} alt="" />}
+        {eyebrow ? <p className="modal__eyebrow">{eyebrow}</p> : icon && <img src={infoIcon} alt="" />}
         <h2 id={id} className="modal__title">
           {title}
         </h2>

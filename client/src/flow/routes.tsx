@@ -4,6 +4,7 @@ import { Navigate, Outlet, useNavigate } from 'react-router';
 import { FlowProvider, useFlow } from './FlowProvider';
 import { STEPS, blockingStep } from './lib/steps';
 import { loadSavedProfile } from './lib/storage';
+import { CameraStep } from './steps/CameraStep';
 import { CardStep } from './steps/CardStep';
 import { GenerateStep } from './steps/GenerateStep';
 import { ProfileStep } from './steps/ProfileStep';
@@ -43,6 +44,7 @@ export const flowRoutes = {
   ),
   children: [
     { path: '/start', element: <StepRoute index={0}><SelfieStep /></StepRoute> },
+    { path: '/start/camera', element: <StepRoute index={0}><CameraStep /></StepRoute> },
     { path: '/profile', element: <ProfileEntry /> },
     { path: '/flow/profile', element: <StepRoute index={1}><ProfileStep /></StepRoute> },
     { path: '/flow/reference', element: <StepRoute index={2}><ReferenceStep /></StepRoute> },
