@@ -41,6 +41,10 @@ const FIELD_MESSAGES: Record<string, string> = {
   priceMax: '가격대를 다시 확인해 주세요.',
   text: '후기는 100자까지 쓸 수 있어요.',
   licenseImageKey: '면허증 사진을 다시 올려 주세요.',
+  instagram: '인스타 계정은 영문·숫자·마침표·밑줄 30자 이내로 적어 주세요.',
+  shopName: '매장 이름을 확인해 주세요.',
+  name: '이름을 확인해 주세요.',
+  licenseNumber: '면허번호를 확인해 주세요.',
   designImageKey: '시안 사진을 다시 올려 주세요.',
 };
 
@@ -117,7 +121,11 @@ export const api = {
 /** 로그인·계정 (AuthProvider 전용: 토큰을 직접 넘긴다) */
 export const v2 = {
   kakaoLogin: (code: string, redirectUri: string) => call<LoginResponse>('/auth/kakao', { body: { code, redirectUri }, token: null }),
-  devLogin: (kakaoId: string) => call<LoginResponse>('/auth/dev', { body: { kakaoId }, token: null }),
+  /** 개발 모드 전용 (배포 번들에서는 빠진다. 백엔드도 production에서 닫혀 있다) */
+  devLogin: (kakaoId: string) =>
+    import.meta.env.DEV
+      ? call<LoginResponse>('/auth/dev', { body: { kakaoId }, token: null })
+      : Promise.reject(new V2Error(0, 'not_configured', '지금은 로그인을 쓸 수 없어요.')),
   logout: (token: string) => call<void>('/auth/logout', { method: 'POST', token }),
   me: (token: string) => call<Me>('/me', { token }),
   getHairProfile: (token: string) => call<HairProfileResponse>('/me/hair-profile', { token }),

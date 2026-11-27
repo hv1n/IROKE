@@ -29,7 +29,7 @@ export const BUDGET_LABELS: Record<BudgetChoice, string> = {
   over_15: '15만원 이상',
   proposal: '디자이너 제안',
 };
-const BUDGET_SHORT: Record<BudgetChoice, string> = { under_5: '~5만', '5_10': '5~10만', '10_15': '10~15만', over_15: '15만~', proposal: '가격 제안' };
+const BUDGET_SHORT: Record<BudgetChoice, string> = { under_5: '~5만', '5_10': '5~10만', '10_15': '10~15만', over_15: '15만~', proposal: '디자이너 제안' };
 
 export const AVAILABILITY_LABELS: Record<Availability, string> = { possible: '가능', conditional: '조건부 가능' };
 export const SORT_LABELS: Record<ResponseSort, string> = { price_asc: '가격 낮은 순', temperature_desc: '온도 높은 순', works_desc: '작업 많은 순' };
